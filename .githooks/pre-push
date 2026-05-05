@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+
+# Push 前的本地质量检查。
+# 如果任意一步失败，Git 会停止 push，让你先修格式、lint 或 build 问题。
+
+set -eu
+
+echo "Running pre-push checks..."
+
+npm run format:check
+npm run lint
+npm run build
+
+echo "Pre-push checks passed."
