@@ -1,7 +1,7 @@
 {
   "name": "info303-better-stop",
   "version": "1.0.0",
-  "description": "INFO 303 multimodal remix artifact for a Better Stop wayfinding prototype.",
+  "description": "INFO 303 multimodal wayfinding prototype for a Better Stop proof of concept.",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -18,7 +18,7 @@
           :current-language="currentLanguage"
           :languages="languageOptions"
           :label="appText.languageLabel"
-          @update:language="currentLanguage = $event"
+          @update:language="setLanguage"
         />
       </div>
     </header>
@@ -73,6 +73,7 @@ import {
   getRationaleText,
   getScenarioText,
   getViewerText,
+  isLanguageAvailable,
   LANGUAGE_OPTIONS,
   type Locale,
 } from './i18n';
@@ -142,5 +143,18 @@ function selectHotspot(hotspotId: HotspotId): void {
 /** 清除固定选择，回到 hover 或默认说明。 */
 function clearSelection(): void {
   selectedHotspotId.value = null;
+}
+
+/**
+ * 切换界面语言。Spanish 目前只作为 coming soon 选项保留，不能进入 currentLanguage。
+ *
+ * @param nextLanguage 用户请求切换的语言。
+ */
+function setLanguage(nextLanguage: Locale): void {
+  if (!isLanguageAvailable(nextLanguage)) {
+    return;
+  }
+
+  currentLanguage.value = nextLanguage;
 }
 </script>

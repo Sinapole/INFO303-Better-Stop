@@ -53,6 +53,7 @@ export interface RationaleText {
   eyebrow: string;
   title: string;
   body: string;
+  bodyParagraphs?: string[];
   pointsTitle: string;
   points: string[];
 }
@@ -76,6 +77,8 @@ export interface LanguageOption {
   id: Locale;
   shortLabel: string;
   label: string;
+  disabled?: boolean;
+  disabledHint?: Partial<Record<Locale, string>>;
 }
 
 /**

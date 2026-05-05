@@ -3,7 +3,9 @@
     <div class="rationale-section__intro">
       <p class="eyebrow">{{ content.eyebrow }}</p>
       <h2>{{ content.title }}</h2>
-      <p>{{ content.body }}</p>
+      <p v-for="paragraph in bodyParagraphs" :key="paragraph">
+        {{ paragraph }}
+      </p>
     </div>
 
     <div class="rationale-section__points">
@@ -20,6 +22,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import type { RationaleText } from '../i18n/types';
 
 /** RationaleSection 展示项目说明；所有正文都来自 i18n 数据。 */
@@ -28,5 +31,7 @@ interface RationaleSectionProps {
   content: RationaleText;
 }
 
-defineProps<RationaleSectionProps>();
+const props = defineProps<RationaleSectionProps>();
+
+const bodyParagraphs = computed(() => props.content.bodyParagraphs ?? [props.content.body]);
 </script>

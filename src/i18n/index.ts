@@ -18,7 +18,8 @@ export type { Locale } from './types';
 /**
  * 所有语言包的注册表。
  *
- * English 是完整基准语言；中文和西语允许缺字段，并通过 getter 函数自动回退。
+ * English 是完整基准语言；中文允许缺字段，并通过 getter 函数自动回退。
+ * Spanish 文件暂时保留为 future placeholder，但 UI 不允许切换到 es。
  */
 const localizedMessages: Record<Locale, PartialMessages> = {
   en,
@@ -26,14 +27,48 @@ const localizedMessages: Record<Locale, PartialMessages> = {
   es,
 };
 
+/** 当前真正可用的界面语言。Spanish 暂时只作为 disabled 选项展示。 */
+export const AVAILABLE_LOCALES: Locale[] = ['en', 'zh'];
+
 /** 页面顶部语言 chips 使用的显示选项。 */
 export const LANGUAGE_OPTIONS: LanguageOption[] = [
   { id: 'en', shortLabel: 'EN', label: 'English' },
   { id: 'zh', shortLabel: '中文', label: '中文' },
-  { id: 'es', shortLabel: 'ES', label: 'Español' },
+  {
+    id: 'es',
+    shortLabel: 'ES',
+    label: 'Español',
+    disabled: true,
+    disabledHint: {
+      en: 'Español próximamente.',
+      zh: 'Español próximamente.',
+      es: 'Español próximamente.',
+    },
+  },
 ];
 
 const englishHotspots = en.hotspots as Record<string, HotspotText>;
+
+/**
+ * 判断某个 locale 目前是否允许作为 currentLanguage。
+ *
+ * @param locale 待切换的语言 ID。
+ * @returns 当前 UI 是否允许切换。
+ */
+export function isLanguageAvailable(locale: Locale): boolean {
+  return AVAILABLE_LOCALES.includes(locale);
+}
+
+/**
+ * 获取当前可用语言包。不可用语言统一回退到 English，避免 ES placeholder
+ * 被当作可用界面语言。
+ *
+ * @param locale 请求的语言 ID。
+ * @returns 可用于文案合并的语言包。
+ */
+function getLocalizedMessages(locale: Locale): PartialMessages {
+  return localizedMessages[isLanguageAvailable(locale) ? locale : 'en'];
+}
 
 /**
  * 获取 app shell 文案，并对数组字段做 English fallback。
@@ -42,7 +77,7 @@ const englishHotspots = en.hotspots as Record<string, HotspotText>;
  * @returns 合并后的界面文案。
  */
 export function getAppText(locale: Locale): AppText {
-  const localized = localizedMessages[locale].app ?? {};
+  const localized = getLocalizedMessages(locale).app ?? {};
 
   return {
     ...en.app,
@@ -61,7 +96,7 @@ export function getAppText(locale: Locale): AppText {
 export function getViewerText(locale: Locale): ViewerText {
   return {
     ...en.viewer,
-    ...(localizedMessages[locale].viewer ?? {}),
+    ...(getLocalizedMessages(locale).viewer ?? {}),
   };
 }
 
@@ -75,7 +110,7 @@ export function getViewerText(locale: Locale): ViewerText {
 export function getScenarioText(locale: Locale, scenarioId: ScenarioId): ScenarioText {
   return {
     ...en.scenarios[scenarioId],
-    ...(localizedMessages[locale].scenarios?.[scenarioId] ?? {}),
+    ...(getLocalizedMessages(locale).scenarios?.[scenarioId] ?? {}),
   };
 }
 
@@ -108,7 +143,7 @@ export function getScenarioTexts(locale: Locale): Record<ScenarioId, ScenarioTex
 export function getHotspotText(locale: Locale, hotspotId: HotspotId): HotspotText {
   const englishDefault = englishHotspots[DEFAULT_HOTSPOT_KEY];
   const englishHotspot = englishHotspots[hotspotId] ?? englishDefault;
-  const localizedHotspot = localizedMessages[locale].hotspots?.[hotspotId] ?? {};
+  const localizedHotspot = getLocalizedMessages(locale).hotspots?.[hotspotId] ?? {};
 
   return {
     ...englishDefault,
@@ -124,11 +159,12 @@ export function getHotspotText(locale: Locale, hotspotId: HotspotId): HotspotTex
  * @returns 合并后的 rationale 文案。
  */
 export function getRationaleText(locale: Locale): RationaleText {
-  const localized = localizedMessages[locale].rationale ?? {};
+  const localized = getLocalizedMessages(locale).rationale ?? {};
 
   return {
     ...en.rationale,
     ...localized,
+    bodyParagraphs: localized.bodyParagraphs ?? en.rationale.bodyParagraphs,
     points: localized.points ?? en.rationale.points,
   };
 }

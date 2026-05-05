@@ -51,8 +51,9 @@ const loadFailed = ref(false);
 
 /** GLB 模型路径。如果以后换模型文件，优先改这里。 */
 const modelPath = buildPublicAssetPath('models', 'better-stop.glb');
-/** hover / selected 时使用的交通警示橙色。 */
-const highlightColor = new THREE.Color('#ff9f1c');
+/** hover outline 使用交通警示橙色；selected outline 使用导视青色。 */
+const hoverOutlineColor = new THREE.Color('#ff9f1c');
+const selectedOutlineColor = new THREE.Color('#007f7a');
 
 let scene: THREE.Scene | null = null;
 let camera: THREE.PerspectiveCamera | null = null;
@@ -68,12 +69,15 @@ const pointer = new THREE.Vector2();
 const clickableMeshes: THREE.Mesh[] = [];
 /** hotspot ID 到其子 mesh 的映射，用于整组高亮。 */
 const hotspotMeshes = new Map<HotspotId, THREE.Mesh[]>();
-/** 原始材质快照，用于 hover 后恢复颜色和贴图。 */
+/** 原始材质快照，用于切换 scenario 后恢复 display 贴图。 */
 const materialSnapshots = new Map<string, MaterialSnapshot>();
 /** 根据对象名猜测出的可替换贴图对象。 */
 const displayTargets: DisplayTarget[] = [];
 let hoveredHotspotId: HotspotId | null = null;
-let highlightedHotspotId: HotspotId | null = null;
+let hoverOutlineHotspotId: HotspotId | null = null;
+let selectedOutlineHotspotId: HotspotId | null = null;
+let hoverOutline: THREE.Box3Helper | null = null;
+let selectedOutline: THREE.Box3Helper | null = null;
 let initialCameraState: CameraState | null = null;
 
 /** 保存初始相机视角，供 Reset view 按钮恢复。 */
@@ -85,13 +89,10 @@ interface CameraState {
 /**
  * 材质原始状态快照。
  *
- * Three.js 材质类型很多，并不是每种材质都有 color、emissive 或 map。
- * 这里全部做成可选字段，恢复时再通过 type guard 判断。
+ * Three.js 材质类型很多，并不是每种材质都有 map。这里仅保存 scenario
+ * 贴图切换需要恢复的原始 map。
  */
 interface MaterialSnapshot {
-  color?: THREE.Color;
-  emissive?: THREE.Color;
-  emissiveIntensity?: number;
   map?: THREE.Texture | null;
 }
 
@@ -120,6 +121,8 @@ onBeforeUnmount(() => {
   renderer?.domElement.removeEventListener('pointermove', handlePointerMove);
   renderer?.domElement.removeEventListener('pointerleave', handlePointerLeave);
   renderer?.domElement.removeEventListener('click', handleClick);
+  removeOutlineHelper(hoverOutline);
+  removeOutlineHelper(selectedOutline);
   controls?.dispose();
   renderer?.dispose();
 });
@@ -574,9 +577,9 @@ function getIntersectedHotspot(event: MouseEvent | PointerEvent): HotspotId | nu
 
   raycaster.setFromCamera(pointer, camera);
   const intersections = raycaster.intersectObjects(clickableMeshes, false);
-  const firstHit = intersections[0]?.object;
+  const firstHit = intersections.find(({ object }) => !object.userData.ignoreRaycast)?.object;
 
-  return (firstHit?.userData.hotspotId as HotspotId | undefined) ?? null;
+  return firstHit ? getNearestHotspotId(firstHit) : null;
 }
 
 /**
@@ -602,78 +605,144 @@ function setHoveredHotspot(hotspotId: HotspotId | null): void {
 /**
  * 统一刷新模型高亮状态。
  *
- * hover 的优先级高于 selected，所以用户可以在保留右侧选中说明的同时浏览其他组件。
+ * hover 和 selected 都用独立线框表示，不改变模型 mesh 的 scale、position 或材质。
  */
 function refreshHighlight(): void {
-  const nextHotspotId = hoveredHotspotId ?? props.selectedHotspotId;
+  const nextSelectedHotspotId = props.selectedHotspotId;
+  const nextHoverHotspotId =
+    hoveredHotspotId && hoveredHotspotId !== nextSelectedHotspotId ? hoveredHotspotId : null;
 
-  if (highlightedHotspotId === nextHotspotId) {
+  if (selectedOutlineHotspotId !== nextSelectedHotspotId) {
+    selectedOutline = replaceOutlineHelper(
+      selectedOutline,
+      nextSelectedHotspotId,
+      selectedOutlineColor,
+    );
+    selectedOutlineHotspotId = nextSelectedHotspotId;
+  }
+
+  if (hoverOutlineHotspotId !== nextHoverHotspotId) {
+    hoverOutline = replaceOutlineHelper(hoverOutline, nextHoverHotspotId, hoverOutlineColor);
+    hoverOutlineHotspotId = nextHoverHotspotId;
+  }
+}
+
+/**
+ * 用新的 hotspot outline 替换旧 outline。
+ *
+ * @param current 当前 scene 中的 outline helper。
+ * @param hotspotId 需要显示 outline 的 hotspot；null 表示移除。
+ * @param color outline 颜色。
+ * @returns 新的 helper，或 null。
+ */
+function replaceOutlineHelper(
+  current: THREE.Box3Helper | null,
+  hotspotId: HotspotId | null,
+  color: THREE.Color,
+): THREE.Box3Helper | null {
+  removeOutlineHelper(current);
+
+  if (!scene || !hotspotId) {
+    return null;
+  }
+
+  const box = getHotspotBoundingBox(hotspotId);
+
+  if (!box) {
+    return null;
+  }
+
+  const helper = new THREE.Box3Helper(box, color);
+  helper.userData.ignoreRaycast = true;
+  helper.raycast = () => {};
+  helper.renderOrder = 10;
+
+  const material = helper.material as THREE.LineBasicMaterial;
+  material.depthTest = false;
+  material.depthWrite = false;
+  material.transparent = true;
+  material.opacity = 0.92;
+
+  scene.add(helper);
+  return helper;
+}
+
+/**
+ * 从 scene 中移除 outline helper。
+ *
+ * @param helper 需要移除的 helper。
+ */
+function removeOutlineHelper(helper: THREE.Box3Helper | null): void {
+  if (!helper) {
     return;
   }
 
-  if (highlightedHotspotId) {
-    resetHotspotMaterials(highlightedHotspotId);
-  }
+  scene?.remove(helper);
+  helper.geometry.dispose();
 
-  highlightedHotspotId = nextHotspotId;
-
-  if (highlightedHotspotId) {
-    highlightHotspotMaterials(highlightedHotspotId);
-  }
-}
-
-/**
- * 给指定 hotspot 的所有 mesh 增加轻微橙色高亮。
- *
- * @param hotspotId 需要高亮的 hotspot ID。
- */
-function highlightHotspotMaterials(hotspotId: HotspotId): void {
-  for (const mesh of hotspotMeshes.get(hotspotId) ?? []) {
-    for (const material of getMeshMaterials(mesh)) {
-      const snapshot = materialSnapshots.get(material.uuid);
-
-      if (hasEmissive(material)) {
-        material.emissive.copy(highlightColor);
-        material.emissiveIntensity = Math.max(snapshot?.emissiveIntensity ?? 0, 0.32);
-      } else if (hasColor(material) && snapshot?.color) {
-        material.color.copy(snapshot.color).lerp(highlightColor, 0.22);
-      }
-
-      material.needsUpdate = true;
+  if (Array.isArray(helper.material)) {
+    for (const material of helper.material) {
+      material.dispose();
     }
+  } else {
+    helper.material.dispose();
   }
 }
 
 /**
- * 恢复指定 hotspot 的原始材质颜色和 emissive 状态。
+ * 根据 hotspot 的已注册 mesh 计算包围盒，略微外扩后作为 outline frame。
  *
- * @param hotspotId 需要取消高亮的 hotspot ID。
+ * @param hotspotId 需要框选的 hotspot ID。
+ * @returns 可绘制的 Box3，或 null。
  */
-function resetHotspotMaterials(hotspotId: HotspotId): void {
-  for (const mesh of hotspotMeshes.get(hotspotId) ?? []) {
-    for (const material of getMeshMaterials(mesh)) {
-      const snapshot = materialSnapshots.get(material.uuid);
+function getHotspotBoundingBox(hotspotId: HotspotId): THREE.Box3 | null {
+  const meshes = hotspotMeshes.get(hotspotId) ?? [];
 
-      if (!snapshot) {
-        continue;
-      }
-
-      if (hasEmissive(material) && snapshot.emissive) {
-        material.emissive.copy(snapshot.emissive);
-        material.emissiveIntensity = snapshot.emissiveIntensity ?? 0;
-      }
-
-      if (hasColor(material) && snapshot.color) {
-        material.color.copy(snapshot.color);
-      }
-
-      material.needsUpdate = true;
-    }
+  if (meshes.length === 0) {
+    return null;
   }
+
+  const box = new THREE.Box3();
+  const meshBox = new THREE.Box3();
+
+  for (const mesh of meshes) {
+    meshBox.setFromObject(mesh);
+    box.union(meshBox);
+  }
+
+  if (box.isEmpty()) {
+    return null;
+  }
+
+  const size = box.getSize(new THREE.Vector3());
+  const padding = Math.max(size.length() * 0.012, 0.025);
+  box.expandByScalar(padding);
+
+  return box;
 }
 
 /**
- * 复制 mesh 材质，避免 hover 高亮改到 GLB 中共享的材质实例。
+ * 从命中的 mesh 向上查找最近的 `Hotspot_` parent，避免 parent/child 间来回跳变。
+ *
+ * @param object raycaster 命中的对象。
+ * @returns 最近的 hotspot ID。
+ */
+function getNearestHotspotId(object: THREE.Object3D): HotspotId | null {
+  let current: THREE.Object3D | null = object;
+
+  while (current) {
+    if (isHotspotName(current.name)) {
+      return current.name;
+    }
+
+    current = current.parent;
+  }
+
+  return (object.userData.hotspotId as HotspotId | undefined) ?? null;
+}
+
+/**
+ * 复制 mesh 材质，避免 scenario 贴图替换改到 GLB 中共享的材质实例。
  *
  * @param mesh 模型中的任意 mesh。
  */
@@ -687,16 +756,13 @@ function cloneMaterialsForInteraction(mesh: THREE.Mesh): void {
 }
 
 /**
- * 保存 mesh 材质的原始颜色、emissive 和 map。
+ * 保存 mesh 材质的原始 map。
  *
  * @param mesh 模型中的任意 mesh。
  */
 function captureMaterialSnapshots(mesh: THREE.Mesh): void {
   for (const material of getMeshMaterials(mesh)) {
     materialSnapshots.set(material.uuid, {
-      color: hasColor(material) ? material.color.clone() : undefined,
-      emissive: hasEmissive(material) ? material.emissive.clone() : undefined,
-      emissiveIntensity: hasEmissive(material) ? material.emissiveIntensity : undefined,
       map: hasMap(material) ? material.map : undefined,
     });
   }
@@ -740,28 +806,6 @@ function getMeshMaterials(mesh: THREE.Mesh): THREE.Material[] {
  */
 function isMesh(object: THREE.Object3D): object is THREE.Mesh {
   return (object as THREE.Mesh).isMesh;
-}
-
-/**
- * 判断材质是否拥有 color 属性。
- *
- * @param material 任意 Three.js material。
- * @returns 如果材质可以修改 color，返回 true。
- */
-function hasColor(material: THREE.Material): material is THREE.Material & { color: THREE.Color } {
-  return 'color' in material && material.color instanceof THREE.Color;
-}
-
-/**
- * 判断材质是否拥有 emissive 属性。
- *
- * @param material 任意 Three.js material。
- * @returns 如果材质可以修改 emissive，返回 true。
- */
-function hasEmissive(
-  material: THREE.Material,
-): material is THREE.Material & { emissive: THREE.Color; emissiveIntensity: number } {
-  return 'emissive' in material && material.emissive instanceof THREE.Color;
 }
 
 /**

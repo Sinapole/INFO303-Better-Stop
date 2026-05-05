@@ -1,6 +1,7 @@
 :root {
   color: #101820;
   background: #e7edf1;
+  --workspace-panel-height: clamp(640px, 68vh, 780px);
   font-family:
     Inter,
     ui-sans-serif,
@@ -53,6 +54,7 @@ button {
 }
 
 .topbar__identity {
+  min-width: 0;
   padding: 18px 22px;
   border-right: 4px solid #101820;
 }
@@ -85,6 +87,7 @@ button {
   max-width: 680px;
   font-size: 1.05rem;
   font-weight: 800;
+  overflow-wrap: anywhere;
 }
 
 .topbar__tools {
@@ -106,6 +109,7 @@ button {
 .route-chip {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   min-height: 32px;
   padding: 5px 10px;
   border: 3px solid #101820;
@@ -113,6 +117,7 @@ button {
   color: #101820;
   font-size: 0.78rem;
   font-weight: 950;
+  text-align: center;
   text-transform: uppercase;
 }
 
@@ -142,6 +147,20 @@ button {
   text-transform: uppercase;
 }
 
+.language-chip-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.language-chip-wrapper--disabled {
+  cursor: not-allowed;
+}
+
+.language-chip-wrapper--disabled:focus {
+  outline: 2px solid #ff9f1c;
+  outline-offset: 3px;
+}
+
 .language-chip,
 .scenario-button,
 .text-button,
@@ -164,7 +183,7 @@ button {
   padding: 7px 11px;
 }
 
-.language-chip:hover,
+.language-chip:not(:disabled):hover,
 .scenario-button:hover,
 .text-button:hover,
 .viewer-toolbar button:hover {
@@ -176,11 +195,51 @@ button {
   color: #ffffff;
 }
 
+.language-chip--disabled {
+  border-color: #8d99a6;
+  background: #eef2f6;
+  color: #697687;
+  cursor: not-allowed;
+  opacity: 0.56;
+  pointer-events: none;
+}
+
+.language-chip-tooltip {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  z-index: 8;
+  width: max-content;
+  max-width: 220px;
+  padding: 7px 9px;
+  border: 2px solid #101820;
+  background: #ffffff;
+  color: #1b2733;
+  box-shadow: 4px 4px 0 #101820;
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1.25;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -2px);
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
+}
+
+.language-chip-wrapper--disabled:hover .language-chip-tooltip,
+.language-chip-wrapper--disabled:focus .language-chip-tooltip,
+.language-chip-wrapper--disabled:focus-within .language-chip-tooltip {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
 .workspace-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(360px, 440px);
+  align-items: start;
   gap: 18px;
-  min-height: 640px;
+  min-height: var(--workspace-panel-height);
 }
 
 .model-region,
@@ -192,7 +251,8 @@ button {
 }
 
 .model-region {
-  min-height: 640px;
+  height: var(--workspace-panel-height);
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -200,7 +260,7 @@ button {
   position: relative;
   width: 100%;
   height: 100%;
-  min-height: 640px;
+  min-height: 0;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(244, 246, 248, 0.86)), #f4f6f8;
 }
@@ -263,7 +323,10 @@ button {
   display: grid;
   grid-template-rows: auto auto 1fr;
   gap: 0;
-  min-height: 640px;
+  height: var(--workspace-panel-height);
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .hotspot-panel,
@@ -403,6 +466,10 @@ button {
   margin: 0;
 }
 
+.rationale-section__intro p + p {
+  margin-top: 12px;
+}
+
 .rationale-section ul {
   display: grid;
   gap: 10px;
@@ -436,8 +503,26 @@ button {
     min-width: 0;
   }
 
+  .route-chip-group {
+    min-width: 0;
+  }
+
   .workspace-grid {
     min-height: 0;
+  }
+
+  .model-region,
+  .info-panel {
+    height: auto;
+    min-height: 640px;
+  }
+
+  .three-viewer {
+    min-height: 640px;
+  }
+
+  .info-panel {
+    overflow-y: visible;
   }
 }
 
@@ -462,6 +547,15 @@ button {
   .rationale-section__intro,
   .rationale-section__points {
     padding: 14px;
+  }
+
+  .route-chip-group {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .route-chip {
+    min-width: 0;
   }
 
   .model-region,

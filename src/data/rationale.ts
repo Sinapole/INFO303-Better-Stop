@@ -5,7 +5,7 @@
  * 方便之后把 rationale 拆成更细的可翻译字段。
  */
 export const RATIONALE_POINT_IDS = [
-  'remix',
+  'prototypeSource',
   'audience',
   'stopFocus',
   'multimodalStrategies',

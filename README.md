@@ -2,50 +2,46 @@
 
 ## Project Overview
 
-Better Stop is an interactive wayfinding prototype for a redesigned MTD bus stop. I set the scene at Fourth and Peabody, which is a relatively smaller stop. The project builds on my previous Better Kiosk project, but shifts the focus from a single digital screen to a complete stop-level information environment.
+Better Stop is an interactive wayfinding prototype for MTD riders. It uses one redesigned stop as a proof of concept for how physical signage, printed maps, e-paper updates, kiosk support, QR access, audio guidance, and tactile cues can work together at the moment a rider needs to make a decision.
 
-The prototype asks how a bus stop can help riders make decisions in the moment: where they are, which direction they need, what service changes are happening, and where they can find language or accessibility support.
+This project was created for INFO 303 as a multimodal prototype based on previous Better Kiosk / MTD wayfinding research. It is not a full MTD system redesign and it is not a professional design book. The scope is intentionally narrow: one rider-facing stop-level wayfinding environment at Fourth & Peabody.
 
 ## Audience
 
-This prototype is designed for first-time and occasional MTD riders near UIUC. These riders may not already know MTD route names, boarding corners, service patterns, or campus geography.
+The prototype is designed for first-time and occasional MTD riders near UIUC. These riders may not already know MTD route names, boarding corners, service patterns, or campus geography.
 
-The design also considers ESL riders and riders who may benefit from clearer visual guidance, audio support, and QR-based language assistance.
+The design also considers riders who benefit from clearer visual hierarchy, language support, audio guidance, QR access, and accessibility cues. The interface currently supports English and Chinese, with Spanish reserved as a future language option.
 
 ## Prototype Framework
 
-The prototype divides rider information across several layers instead of placing everything on one sign:
+The goal is not to place more information everywhere. The goal is to turn transit information into actionable guidance at the stop.
 
-- The stop marker helps riders identify the stop from a distance.
-- The printed map panel helps riders understand where they are and which boarding corners are nearby.
-- The e-paper display shows immediate service information such as arrivals, reroutes, alerts, and limited-service warnings.
-- The Better Kiosk LCD provides deeper route planning and full map information.
-- The QR guide connects riders to live information, language support, and accessibility information.
-- Audio guidance and tactile paving connect information design to physical movement and boarding.
+The prototype divides information across physical and digital information layers:
 
-This framework keeps the printed layer stable and readable, while digital layers handle information that changes over time.
+- The stop marker helps riders identify Fourth & Peabody from a distance.
+- The printed map panel provides stable orientation: where the rider is, what corners are nearby, and how to move from the current corner to a boarding decision.
+- The e-paper display handles dynamic updates such as arrivals, reroutes, alerts, and limited-service warnings.
+- The Better Kiosk LCD builds on the previous Better Kiosk research by supporting deeper route planning and detailed map exploration.
+- The QR guide connects the physical stop to mobile language, accessibility, and live service information without overcrowding the printed sign.
+- Audio guidance and tactile paving connect wayfinding information to physical movement and accessible boarding.
 
 ## Interactive Experience
 
-The website allows viewers to explore the 3D stop model by hovering over or clicking different components. Each interactive area explains how that part of the prototype supports rider decision-making.
+The website lets viewers explore the 3D stop model by hovering over or clicking different components. Each hotspot explains how that component helps a rider make a decision in the moment.
 
-The prototype also includes scenario-based display states, such as normal service, limited service, and reroute / alert situations. These display states are sample frames rather than live MTD data. They are included to show how dynamic stop information could communicate different rider situations.
+The prototype also includes scenario-based display states, such as normal service, limited service, and reroute / alert situations. These states are sample frames rather than live MTD data. They show how stable orientation and dynamic updates can work together in different rider situations.
 
 ## Design Focus
-
-The goal of this project is not to add more information everywhere. The goal is to make information easier to act on.
 
 The prototype focuses on four rider questions:
 
 1. Where am I?
 2. Which boarding corner or direction do I need?
-3. Where can I check reroutes, alerts, and exact arrival information?
+3. Where can I check reroutes, alerts, limited service, and exact arrival information?
 4. How can I access language or accessibility support?
 
-By focusing on one stop, the prototype can show how physical signage, printed maps, digital displays, QR access, audio guidance, and accessible boarding cues work together in a specific place.
+By focusing on one stop, the project can show how physical signage, printed maps, e-paper updates, kiosk support, QR access, audio guidance, and tactile cues work together in a specific place.
 
 ## Scope
 
-This is not a full MTD system redesign or a finished infrastructure proposal. It is a focused prototype that uses one stop as a proof of concept.
-
-Some route, schedule, and alert information is sample content created for design demonstration. The prototype is inspired by MTD stop information and route logic, but it does not provide live transit data. For actual service information, riders should use official MTD resources.
+Better Stop is a prototype and proof of concept, not a finished infrastructure proposal. Route, schedule, and alert content is sample content created for design demonstration. The prototype is inspired by MTD stop information and route logic, but it does not provide live transit data. For actual service information, riders should use official MTD resources.
