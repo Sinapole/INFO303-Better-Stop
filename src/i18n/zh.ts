@@ -9,6 +9,7 @@ export const zh = {
     sectionLabel: 'Section',
     prototypeNav: 'Prototype',
     aboutNav: 'About',
+    creditsNav: 'Credits',
     hotspotPanelTitle: '面向乘客的导视组件',
     noHotspotTitle: '探索 Fourth & Peabody 站点',
     noHotspotDetail:
@@ -22,11 +23,11 @@ export const zh = {
       nextAction: '下一步行动',
     },
     decisionOverview: {
-      decisionHelped: '形成 stop-level wayfinding 路径',
+      decisionHelped: '把不确定感转成下一步行动',
       whatRiderLearns:
-        '实体站牌、印刷地图、e-paper、kiosk、QR guide、语音点和触觉铺装共同说明乘客在哪里、哪些信息是稳定的、哪些信息会实时变化，以及哪里可以获得支持。',
+        '这个站点被当作一个小型 wayfinding system：静态站牌、印刷地图、e-paper、kiosk、QR、语音和触觉线索分别回答乘客在街角可能遇到的不同问题。',
       nextAction:
-        '悬停或点击一个 hotspot，查看某个组件如何支持 Fourth & Peabody 现场的具体乘车决定。',
+        '悬停或点击一个组件，查看它减少了哪一种不确定感，以及它如何帮助乘客在 Fourth & Peabody 做出下一步行动。',
     },
     languageLabel: '语言',
     clearSelection: '取消固定',
@@ -116,7 +117,7 @@ export const zh = {
       title: '站牌 + E-paper 显示',
       short: '远距离确认站点，并提供即时服务状态。',
       detail:
-        '这个组件把清晰可见的站点标识和小型 e-paper 信息层结合起来。静态站牌帮助乘客确认自己在 Fourth & Peabody，e-paper 则可以显示下一班车、limited-service 提醒、绕行和服务警报。它回答的是乘客最即时的问题：“我是不是在正确的站点？现在发生了什么？”',
+        '这个组件保留乘客熟悉的站点标识，同时加入一个小型动态信息层。静态站牌帮助乘客从远处确认 Fourth & Peabody；e-paper 区域可以在到站、limited service 和 alert frame 之间轮换，让站点回答乘客最先遇到的问题：“我是不是在正确的地方？现在我需要知道什么？”',
       decision: {
         decisionHelped: '确认站点',
         whatRiderLearns:
@@ -153,7 +154,7 @@ export const zh = {
       title: 'Better Kiosk LCD',
       short: '提供更深入的路线规划和详细指引。',
       detail:
-        'LCD kiosk 把原来的 Better Kiosk research 延展到这个 stop-level prototype 中。它不是把所有信息都塞进印刷站牌，而是在乘客需要更多支持时提供完整路线图、trip planning、语言选项、无障碍设置和更详细的时刻表探索。',
+        'LCD kiosk 把之前的 Better Kiosk 想法带入这个单站点 prototype。它承担更复杂的信息：路线比较、语言设置、无障碍选项和更详细的时刻表探索。这样印刷站牌不需要承载所有内容，乘客也能在需要时做更完整的 trip check。',
       decision: {
         decisionHelped: '规划下一步路线选择',
         whatRiderLearns:
@@ -166,7 +167,7 @@ export const zh = {
       title: '站牌处语音指引',
       short: '在站点标识附近提供 spoken assistance。',
       detail:
-        '语音组件支持无法轻松阅读小字、正在快速扫视站点、或需要 spoken guidance 的乘客。它把无障碍支持连接到实体站点环境，而不只是连接到公交车、app 或单独的网站。',
+        '语音点是这个 prototype 中的无障碍信息层，面向无法轻松阅读小字、正在快速扫视站点、或需要 spoken confirmation 的乘客。在这个网页版本里，语音由浏览器 SpeechSynthesis API 模拟，所以我可以先测试信息内容，而不需要真的搭建实体扬声器。',
       decision: {
         decisionHelped: '在站牌处获得无障碍支持',
         whatRiderLearns: '乘客不用只依赖小字印刷内容或个人设备，也能听到关键站点和服务信息。',
@@ -186,7 +187,7 @@ export const zh = {
       title: '候车亭内语音指引',
       short: '在等待区域附近提供 spoken guidance。',
       detail:
-        '候车亭内的语音点为等待中的乘客提供另一个获取 spoken information 的位置。它可以重复印刷地图、kiosk 和 QR guide 中的关键指引，而不是要求每个乘客都阅读屏幕。',
+        '候车亭内的语音点把关键指引重复到乘客可能已经停留的位置。在网页 prototype 中，这一层使用浏览器 SpeechSynthesis 生成，朗读内容和其他界面文案一样可以通过 i18n 文件修改。',
       decision: {
         decisionHelped: '等待时复查指引',
         whatRiderLearns: '乘客可以在已经停留的候车区域获得重复的 spoken guidance。',
@@ -198,7 +199,7 @@ export const zh = {
         locale: 'zh-CN',
         preferredVoiceNames: ['Tingting', 'Meijia', 'Sin-ji', 'Google 普通话'],
         transcript:
-          '这里是 Fourth and Peabody，西北角站点。本站服务 Route 22 North Illini 和 Route 24 South Link。下一班到达的是 Route 22 North Illini，约 3 分钟后到站。Route 24 South Link 约 5 分钟后到站。',
+          '这里是 Fourth and Peabody，西北角站点。本站服务 Route 22 North Illini 和 Route 24 South Link。下一班到达的是 Route 22 North Illini，约 3 分钟后到站。Route 24 South Link 约 8 分钟后到站。',
         unsupportedMessage: '当前浏览器不支持内置语音播放。语音指引文本已显示在下方。',
       },
     },
@@ -272,6 +273,25 @@ export const zh = {
       '它基于 Better Kiosk / MTD wayfinding research，并把研究转化成 stop-level proof of concept。',
       '它聚焦 Fourth & Peabody，以及 first-time 或 occasional MTD riders 在那里会遇到的现场决定。',
       '它不是完整 MTD system redesign，不是完整 design book，也不是公交运行状态模拟器。',
+    ],
+  },
+  credits: {
+    eyebrow: '参考与素材',
+    title: 'Credits',
+    body: '这个页面先作为 references 和素材记录区。这样 Prototype 页面可以保持聚焦，同时之后仍然有清楚的位置补充引用、资源来源和实现说明。',
+    sections: [
+      {
+        title: 'Research References',
+        body: '之后可以在这里加入 MTD wayfinding research、Better Kiosk materials、transit accessibility references，以及课程阅读材料。',
+      },
+      {
+        title: 'Prototype Assets',
+        body: '这里可以记录 3D model、screen frames、favicon、texture files，以及之后新增或 remix 的视觉素材。',
+      },
+      {
+        title: 'Implementation Notes',
+        body: '这里可以说明 prototype 使用的工具，例如 Vue、Three.js、用来模拟语音的 browser SpeechSynthesis，以及之后加入的数据或 library。',
+      },
     ],
   },
 } satisfies PartialMessages;

@@ -5,6 +5,7 @@ import { es } from './es';
 import { zh } from './zh';
 import type {
   AppText,
+  CreditsText,
   LanguageOption,
   Locale,
   PartialMessages,
@@ -180,5 +181,21 @@ export function getRationaleText(locale: Locale): RationaleText {
     bodyParagraphs: localized.bodyParagraphs ?? en.rationale.bodyParagraphs,
     points: localized.points ?? en.rationale.points,
     scopeItems: localized.scopeItems ?? en.rationale.scopeItems,
+  };
+}
+
+/**
+ * 获取 credits 页面文案。
+ *
+ * @param locale 当前语言。
+ * @returns 合并后的 credits 文案。
+ */
+export function getCreditsText(locale: Locale): CreditsText {
+  const localized = getLocalizedMessages(locale).credits ?? {};
+
+  return {
+    ...en.credits,
+    ...localized,
+    sections: localized.sections ?? en.credits.sections,
   };
 }

@@ -10,6 +10,7 @@ export const en = {
     sectionLabel: 'Section',
     prototypeNav: 'Prototype',
     aboutNav: 'About',
+    creditsNav: 'Credits',
     hotspotPanelTitle: 'Rider-Facing Wayfinding Component',
     noHotspotTitle: 'Explore the Fourth & Peabody stop',
     noHotspotDetail:
@@ -23,11 +24,11 @@ export const en = {
       nextAction: 'Next action',
     },
     decisionOverview: {
-      decisionHelped: 'Build a stop-level wayfinding path',
+      decisionHelped: 'Move from uncertainty to a next step',
       whatRiderLearns:
-        'Together, the physical sign, printed map, e-paper layer, kiosk, QR guide, audio points, and tactile paving show where the rider is, what information is stable, what can change in real time, and where support is available.',
+        'The stop is treated as a small wayfinding system. Static signs, printed maps, e-paper updates, kiosk screens, QR access, audio prompts, and tactile cues each answer a different question a rider may have at the corner.',
       nextAction:
-        'Hover or select a hotspot to see how one component supports a specific in-person decision at Fourth & Peabody.',
+        'Hover or select a component to see what kind of uncertainty it reduces and what action it makes easier at Fourth & Peabody.',
     },
     languageLabel: 'Language',
     clearSelection: 'Clear selection',
@@ -120,7 +121,7 @@ export const en = {
       title: 'Stop Sign + E-paper Display',
       short: 'Long-distance stop identification and immediate service status.',
       detail:
-        'This component combines a visible stop marker with a compact e-paper information layer. The static sign helps riders confirm they are at Fourth & Peabody, while the e-paper display can show next arrivals, limited-service warnings, reroutes, and service alerts. It answers the rider\'s immediate question: "Am I at the right stop, and what is happening now?"',
+        'This component keeps the familiar stop marker, but adds a small dynamic layer for the moments when a timetable is not enough. The static sign helps riders confirm Fourth & Peabody from a distance. The e-paper area can rotate through arrival, limited-service, and alert frames so the stop can answer the question riders often ask first: "Am I in the right place, and what should I know right now?"',
       decision: {
         decisionHelped: 'Confirm the stop',
         whatRiderLearns:
@@ -159,7 +160,7 @@ export const en = {
       title: 'Better Kiosk LCD',
       short: 'Deeper route planning and detailed guidance.',
       detail:
-        'The LCD kiosk extends the original Better Kiosk research into this stop-level prototype. Instead of placing every detail on the printed sign, the kiosk supports deeper route planning, full route maps, language options, accessibility settings, and detailed schedule exploration when riders need more support.',
+        'The LCD kiosk carries the earlier Better Kiosk idea into this single-stop prototype. It is where the design can hold more complex guidance without crowding the printed sign: route comparison, language settings, accessibility options, and more detailed schedule exploration for riders who need a fuller check before boarding.',
       decision: {
         decisionHelped: 'Plan the next route choice',
         whatRiderLearns:
@@ -172,7 +173,7 @@ export const en = {
       title: 'Audio Guidance at Stop Sign',
       short: 'Spoken assistance near the stop marker.',
       detail:
-        'The audio component supports riders who cannot easily read small text, are scanning the stop quickly, or need spoken guidance. It connects accessibility support to the physical stop environment, not only to a bus, app, or separate website.',
+        'The audio point is a prototype accessibility layer for riders who cannot easily read small text, are moving quickly, or need spoken confirmation. In this website, the voice is simulated with the browser SpeechSynthesis API, so the idea can be tested without building a physical speaker system yet.',
       decision: {
         decisionHelped: 'Get accessibility support at the stop marker',
         whatRiderLearns:
@@ -195,7 +196,7 @@ export const en = {
       title: 'Audio Guidance in Shelter',
       short: 'Spoken guidance near the waiting area.',
       detail:
-        'The in-shelter audio point gives riders another place to access spoken information while waiting. It can repeat key guidance from the printed map, kiosk, and QR guide without asking every rider to read a screen.',
+        'The in-shelter audio point repeats important guidance where riders may already be waiting. In this prototype, the spoken layer is generated with browser SpeechSynthesis, which makes the audio experience editable in the same i18n files as the written interface.',
       decision: {
         decisionHelped: 'Check guidance while waiting',
         whatRiderLearns:
@@ -209,7 +210,7 @@ export const en = {
         locale: 'en-US',
         preferredVoiceNames: ['Samantha', 'Ava', 'Alex', 'Google US English', 'Microsoft Aria'],
         transcript:
-          'This stop is Fourth and Peabody at the northwest corner. It serves Route 22 North Illini and Route 24 South Link. The next bus is Route 22 North Illini, arriving in about 3 minutes. Route 24 South Link arrives in about 5 minutes.',
+          'This stop is Fourth and Peabody at the northwest corner. It serves Route 22 North Illini and Route 24 South Link. The next bus is Route 22 North Illini, arriving in about 3 minutes. Route 24 South Link arrives in about 8 minutes.',
         unsupportedMessage:
           'This browser does not support built-in speech playback. The audio guidance transcript is shown below.',
       },
@@ -290,6 +291,25 @@ export const en = {
       'Based on Better Kiosk / MTD wayfinding research and translated into a stop-level proof of concept.',
       'Focused on Fourth & Peabody and the decisions first-time or occasional MTD riders face there.',
       'Not a complete MTD system redesign, not a full design book, and not a service operations simulator.',
+    ],
+  },
+  credits: {
+    eyebrow: 'References and materials',
+    title: 'Credits',
+    body: 'This page is a placeholder for the sources, assets, and design references that support the prototype. It keeps the main experience focused while leaving a clear place to document what the project builds on.',
+    sections: [
+      {
+        title: 'Research References',
+        body: 'Add citations for MTD wayfinding research, Better Kiosk materials, transit accessibility references, and any course readings used to frame the project.',
+      },
+      {
+        title: 'Prototype Assets',
+        body: 'Document the 3D model, screen frames, favicon, texture files, and any generated or remixed visual materials.',
+      },
+      {
+        title: 'Implementation Notes',
+        body: 'Credit the tools used to build the prototype, including Vue, Three.js, browser SpeechSynthesis for audio simulation, and any future libraries or datasets.',
+      },
     ],
   },
 } satisfies Messages;

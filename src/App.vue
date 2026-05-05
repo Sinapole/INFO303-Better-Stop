@@ -13,6 +13,7 @@
           <nav class="primary-nav" aria-label="Primary navigation">
             <RouterLink to="/">{{ appText.prototypeNav }}</RouterLink>
             <RouterLink to="/about">{{ appText.aboutNav }}</RouterLink>
+            <RouterLink to="/credits">{{ appText.creditsNav }}</RouterLink>
             <button type="button" class="guide-button" @click="openGuide">
               {{ appText.guideButton }}
             </button>

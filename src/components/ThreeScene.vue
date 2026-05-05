@@ -24,6 +24,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { isHotspotName, type HotspotId } from '../data/hotspots';
 import { SCENARIO_TEXTURES, type ScenarioId } from '../data/scenarios';
+import { SCREEN_ANIMATIONS, type ScreenAnimationConfig } from '../data/screenAnimations';
 import type { ViewerText } from '../i18n/types';
 
 /** ThreeScene 的输入状态；文本和交互状态由 App 维护，模型只加载一次。 */
@@ -73,6 +74,8 @@ const hotspotMeshes = new Map<HotspotId, THREE.Mesh[]>();
 const materialSnapshots = new Map<string, MaterialSnapshot>();
 /** 根据对象名猜测出的可替换贴图对象。 */
 const displayTargets: DisplayTarget[] = [];
+/** 当前正在播放的屏幕假帧动画。 */
+const activeScreenAnimations: ScreenAnimationState[] = [];
 let hoveredHotspotId: HotspotId | null = null;
 let hoverOutlineHotspotId: HotspotId | null = null;
 let selectedOutlineHotspotId: HotspotId | null = null;
@@ -97,15 +100,33 @@ interface MaterialSnapshot {
 }
 
 /**
- * 可被 scenario 贴图替换的 mesh。
+ * 可被假帧贴图替换的屏幕 mesh。
  *
- * role 用来决定该 mesh 更像 e-paper 还是 kiosk；如果名字只包含 Display/Screen，
- * 就作为 generic 目标，优先使用 e-paper 贴图。
+ * role 只允许 e-paper 和 kiosk 两类。不要把所有名字含有 Display/Screen
+ * 的 mesh 都当作可替换目标，因为 PrintPanel 等静态信息板也可能挂在
+ * Digital Screen 父级下面。
  */
 interface DisplayTarget {
   mesh: THREE.Mesh;
-  role: 'epaper' | 'kiosk' | 'generic';
+  role: 'epaper' | 'kiosk';
   label: string;
+}
+
+/** 运行中的屏幕假帧动画状态。 */
+interface ScreenAnimationState {
+  target: DisplayTarget;
+  textures: THREE.Texture[];
+  refreshTexture: THREE.Texture | null;
+  timerId: ReturnType<typeof window.setInterval> | null;
+  refreshTimerId: ReturnType<typeof window.setTimeout> | null;
+}
+
+/** mesh 当前 UV 坐标的二维范围。 */
+interface UvBounds {
+  minU: number;
+  minV: number;
+  maxU: number;
+  maxV: number;
 }
 
 onMounted(() => {
@@ -121,6 +142,7 @@ onBeforeUnmount(() => {
   renderer?.domElement.removeEventListener('pointermove', handlePointerMove);
   renderer?.domElement.removeEventListener('pointerleave', handlePointerLeave);
   renderer?.domElement.removeEventListener('click', handleClick);
+  stopScreenAnimations();
   removeOutlineHelper(hoverOutline);
   removeOutlineHelper(selectedOutline);
   controls?.dispose();
@@ -130,7 +152,7 @@ onBeforeUnmount(() => {
 watch(
   () => props.scenarioId,
   () => {
-    void applyScenarioTextures();
+    void refreshDisplayTextures();
   },
 );
 
@@ -222,7 +244,7 @@ function loadModel(): void {
       prepareModel(model);
       frameModel(model);
       loading.value = false;
-      void applyScenarioTextures();
+      void refreshDisplayTextures();
     },
     undefined,
     (error: unknown) => {
@@ -322,30 +344,26 @@ function collectDisplayTargets(model: THREE.Object3D): void {
 /**
  * 通过对象名称判断 display target 类型。
  *
- * 命名约定越清楚，贴图替换越准确。推荐后续模型命名包含 Epaper、Display、
- * Screen 或 Kiosk；Hotspot_StopSign_WithEPaper 和 Hotspot_BetterKiosk 也会被识别。
+ * 这里故意只认明确的 hotspot 名称，不再因为父级包含 Digital Screen 就替换。
+ * 当前模型里 PrintPanel 也在 Digital Screen 父级下，如果继续用 screen/display
+ * 这种泛匹配，会把静态印刷面板误换成 e-paper 假帧。
  *
  * @param label mesh 与其父级名称拼接后的字符串。
  * @returns display role；如果不是可替换贴图对象则返回 null。
  */
 function classifyDisplayTarget(label: string): DisplayTarget['role'] | null {
   const normalized = label.toLowerCase();
-  const isDisplay = /epaper|e-paper|display|screen|kiosk/.test(normalized);
   const isEpaperHotspot =
     normalized.includes('hotspot_stopsign_withepaper') ||
     normalized.includes('hotspot_epaperdisplay');
   const isKioskHotspot = normalized.includes('hotspot_betterkiosk');
 
-  if (normalized.includes('kiosk') || isKioskHotspot) {
+  if (isKioskHotspot) {
     return 'kiosk';
   }
 
-  if (normalized.includes('epaper') || normalized.includes('e-paper') || isEpaperHotspot) {
+  if (isEpaperHotspot) {
     return 'epaper';
-  }
-
-  if (isDisplay) {
-    return 'generic';
   }
 
   return null;
@@ -376,14 +394,26 @@ async function applyScenarioTextures(): Promise<void> {
   }
 
   for (const target of displayTargets) {
-    const texture = target.role === 'kiosk' ? kioskTexture : (epaperTexture ?? kioskTexture);
+    const texture = target.role === 'kiosk' ? kioskTexture : epaperTexture;
 
     if (!texture) {
       continue;
     }
 
-    applyTextureToMesh(target.mesh, texture);
+    applyTextureToTarget(target, texture);
   }
+}
+
+/**
+ * 刷新屏幕贴图并重新启动假帧动画。
+ *
+ * scenario 贴图先作为基础帧写入模型；随后，如果某个 display target 命中了
+ * `SCREEN_ANIMATIONS`，就由假帧动画接管该 mesh 的 map。
+ */
+async function refreshDisplayTextures(): Promise<void> {
+  stopScreenAnimations();
+  await applyScenarioTextures();
+  await startScreenAnimations();
 }
 
 /**
@@ -415,10 +445,24 @@ function loadOptionalTexture(filename: string): Promise<THREE.Texture | null> {
 }
 
 /**
+ * 把贴图应用到单个屏幕目标。
+ *
+ * 模型屏幕常常复用 atlas UV，不一定占满 0-1。这里先根据目标 mesh
+ * 的现有 UV 范围调整 texture transform，让整张假帧覆盖这个屏幕面。
+ *
+ * @param target display target mesh 和识别出的屏幕角色。
+ * @param texture 已加载的 scenario 贴图。
+ */
+function applyTextureToTarget(target: DisplayTarget, texture: THREE.Texture): void {
+  normalizeTextureToTargetUv(texture, target.mesh);
+  applyTextureToMesh(target.mesh, texture);
+}
+
+/**
  * 把贴图应用到单个 mesh 的所有可贴图材质。
  *
  * @param mesh display target mesh。
- * @param texture 已加载的 scenario 贴图。
+ * @param texture 已经按目标 UV 校正过的贴图。
  */
 function applyTextureToMesh(mesh: THREE.Mesh, texture: THREE.Texture): void {
   for (const material of getMeshMaterials(mesh)) {
@@ -429,6 +473,228 @@ function applyTextureToMesh(mesh: THREE.Mesh, texture: THREE.Texture): void {
     material.map = texture;
     material.needsUpdate = true;
   }
+}
+
+/**
+ * 按 mesh 当前 UV 范围校正 texture transform。
+ *
+ * 这一步不改 geometry，也不重建 UV，只把贴图采样从 `[min,max]` 映射到
+ * 整张图片。这样可以复用模型已有 UV，同时避免 atlas UV 导致新 frame 只显示一角。
+ *
+ * @param texture 要应用到屏幕的贴图。
+ * @param mesh 目标屏幕 mesh。
+ */
+function normalizeTextureToTargetUv(texture: THREE.Texture, mesh: THREE.Mesh): void {
+  const bounds = getMeshUvBounds(mesh);
+
+  if (!bounds) {
+    return;
+  }
+
+  const repeatU = bounds.maxU - bounds.minU;
+  const repeatV = bounds.maxV - bounds.minV;
+
+  if (repeatU <= 0 || repeatV <= 0) {
+    return;
+  }
+
+  texture.wrapS = THREE.ClampToEdgeWrapping;
+  texture.wrapT = THREE.ClampToEdgeWrapping;
+  texture.repeat.set(1 / repeatU, 1 / repeatV);
+  texture.offset.set(-bounds.minU / repeatU, -bounds.minV / repeatV);
+  texture.needsUpdate = true;
+}
+
+/**
+ * 读取 mesh 的 UV 包围范围。
+ *
+ * @param mesh 目标屏幕 mesh。
+ * @returns UV 的 min/max；没有 UV 时返回 null。
+ */
+function getMeshUvBounds(mesh: THREE.Mesh): UvBounds | null {
+  const uvAttribute = mesh.geometry.getAttribute('uv');
+
+  if (!uvAttribute) {
+    return null;
+  }
+
+  const bounds: UvBounds = {
+    minU: Number.POSITIVE_INFINITY,
+    minV: Number.POSITIVE_INFINITY,
+    maxU: Number.NEGATIVE_INFINITY,
+    maxV: Number.NEGATIVE_INFINITY,
+  };
+
+  for (let index = 0; index < uvAttribute.count; index += 1) {
+    const u = uvAttribute.getX(index);
+    const v = uvAttribute.getY(index);
+
+    bounds.minU = Math.min(bounds.minU, u);
+    bounds.minV = Math.min(bounds.minV, v);
+    bounds.maxU = Math.max(bounds.maxU, u);
+    bounds.maxV = Math.max(bounds.maxV, v);
+  }
+
+  return Number.isFinite(bounds.minU) ? bounds : null;
+}
+
+/**
+ * 启动所有配置好的屏幕假帧动画。
+ *
+ * 这里不直接假设模型里一定存在某个屏幕；而是根据 display target 的 role
+ * 和对象名关键词匹配，避免换模型后因为缺少某个 mesh 让整个 prototype 崩溃。
+ */
+async function startScreenAnimations(): Promise<void> {
+  for (const target of displayTargets) {
+    const config = getScreenAnimationConfig(target);
+
+    if (!config) {
+      continue;
+    }
+
+    const { textures, refreshTexture } = await loadAnimationTextures(config);
+
+    if (textures.length === 0) {
+      refreshTexture?.dispose();
+      continue;
+    }
+
+    applyTextureToTarget(target, textures[0]);
+
+    activeScreenAnimations.push({
+      target,
+      textures,
+      refreshTexture,
+      timerId: createFrameTimer(target, textures, refreshTexture, config),
+      refreshTimerId: null,
+    });
+  }
+}
+
+/**
+ * 停止所有屏幕假帧动画并释放对应贴图。
+ *
+ * 这个函数会在 scenario 刷新和组件卸载时调用，避免旧 interval 继续改已经
+ * 不存在或即将被重置的材质。
+ */
+function stopScreenAnimations(): void {
+  for (const animation of activeScreenAnimations) {
+    if (animation.timerId) {
+      window.clearInterval(animation.timerId);
+    }
+
+    if (animation.refreshTimerId) {
+      window.clearTimeout(animation.refreshTimerId);
+    }
+
+    for (const texture of animation.textures) {
+      texture.dispose();
+    }
+
+    animation.refreshTexture?.dispose();
+  }
+
+  activeScreenAnimations.length = 0;
+}
+
+/**
+ * 为某个 display target 找到对应的假帧配置。
+ *
+ * @param target 从模型中识别出的屏幕 mesh。
+ * @returns 命中的动画配置；没有命中时返回 undefined。
+ */
+function getScreenAnimationConfig(target: DisplayTarget): ScreenAnimationConfig | undefined {
+  const normalizedLabel = target.label.toLowerCase();
+
+  return SCREEN_ANIMATIONS.find(
+    (config) =>
+      config.role === target.role &&
+      config.labelIncludes.every((keyword) => normalizedLabel.includes(keyword)),
+  );
+}
+
+/**
+ * 加载某个配置下的普通内容帧和可选刷新帧。
+ *
+ * @param config 屏幕动画配置。
+ * @returns 成功加载的内容帧和刷新帧；缺失帧会被跳过。
+ */
+async function loadAnimationTextures(config: ScreenAnimationConfig): Promise<{
+  textures: THREE.Texture[];
+  refreshTexture: THREE.Texture | null;
+}> {
+  const [textures, refreshTexture] = await Promise.all([
+    Promise.all(config.frames.map((frame) => loadOptionalTexture(frame))),
+    config.refreshFrame ? loadOptionalTexture(config.refreshFrame) : Promise.resolve(null),
+  ]);
+  const loadedTextures = textures.filter((texture): texture is THREE.Texture => Boolean(texture));
+
+  if (loadedTextures.length === 0) {
+    console.warn(`[Better Stop] No screen animation frames loaded for ${config.id}.`);
+  }
+
+  return {
+    textures: loadedTextures,
+    refreshTexture,
+  };
+}
+
+/**
+ * 创建一个定时器，让目标屏幕按固定间隔切换到下一帧。
+ *
+ * 如果配置了 refresh frame，定时器会先播放刷新帧，再在 `refreshDurationMs`
+ * 后切到下一张内容帧。这样 e-paper 看起来像先刷新再更新，而不是把刷新帧
+ * 当作普通 carousel 内容。
+ *
+ * @param target 需要播放假帧的屏幕 mesh。
+ * @param textures 已加载的内容帧贴图。
+ * @param refreshTexture 可选刷新帧贴图。
+ * @param config 屏幕动画配置。
+ * @returns interval ID；只有一帧时返回 null。
+ */
+function createFrameTimer(
+  target: DisplayTarget,
+  textures: THREE.Texture[],
+  refreshTexture: THREE.Texture | null,
+  config: ScreenAnimationConfig,
+): ReturnType<typeof window.setInterval> | null {
+  if (textures.length <= 1) {
+    return null;
+  }
+
+  let frameIndex = 0;
+
+  return window.setInterval(() => {
+    frameIndex = (frameIndex + 1) % textures.length;
+
+    if (refreshTexture) {
+      applyTextureToTarget(target, refreshTexture);
+      const animationState = activeScreenAnimations.find(
+        (animation) => animation.target === target,
+      );
+
+      if (animationState?.refreshTimerId) {
+        window.clearTimeout(animationState.refreshTimerId);
+      }
+
+      const refreshDurationMs = config.refreshDurationMs ?? 650;
+      const refreshTimerId = window.setTimeout(() => {
+        applyTextureToTarget(target, textures[frameIndex]);
+
+        if (animationState) {
+          animationState.refreshTimerId = null;
+        }
+      }, refreshDurationMs);
+
+      if (animationState) {
+        animationState.refreshTimerId = refreshTimerId;
+      }
+
+      return;
+    }
+
+    applyTextureToTarget(target, textures[frameIndex]);
+  }, config.intervalMs);
 }
 
 /**

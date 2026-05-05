@@ -16,6 +16,7 @@ export interface AppText {
   sectionLabel: string;
   prototypeNav: string;
   aboutNav: string;
+  creditsNav: string;
   hotspotPanelTitle: string;
   noHotspotTitle: string;
   noHotspotDetail: string;
@@ -68,6 +69,17 @@ export interface RationaleText {
   scopeItems: string[];
 }
 
+/** Credits 页面使用的引用和素材占位文案。 */
+export interface CreditsText {
+  eyebrow: string;
+  title: string;
+  body: string;
+  sections: Array<{
+    title: string;
+    body: string;
+  }>;
+}
+
 /** 首次启动 guide overlay 的单步文案。 */
 export interface GuideStepText {
   title: string;
@@ -90,6 +102,7 @@ export interface Messages {
   scenarios: Record<ScenarioId, ScenarioText>;
   hotspots: Record<string, HotspotText>;
   rationale: RationaleText;
+  credits: CreditsText;
 }
 
 /** 语言切换按钮的显示配置。 */
@@ -118,4 +131,5 @@ export type PartialMessages = {
     }
   >;
   rationale?: Partial<RationaleText>;
+  credits?: Partial<CreditsText>;
 };

@@ -1,5 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 import AboutView from './views/AboutView.vue';
+import CreditsView from './views/CreditsView.vue';
 import PrototypeView from './views/PrototypeView.vue';
 
 export const router = createRouter({
@@ -14,6 +15,11 @@ export const router = createRouter({
       path: '/about',
       name: 'about',
       component: AboutView,
+    },
+    {
+      path: '/credits',
+      name: 'credits',
+      component: CreditsView,
     },
   ],
 });

@@ -24,15 +24,15 @@ export interface ScenarioTextureSet {
 /** 当 `public/textures/` 加入新帧时，在这里改贴图文件名。 */
 export const SCENARIO_TEXTURES: Record<ScenarioId, ScenarioTextureSet> = {
   normal: {
-    epaper: 'epaper-normal.png',
-    kiosk: 'kiosk-normal.png',
+    epaper: 'screens/epaper/stop-sign-with-epaper/frame-001.png',
+    kiosk: 'screens/kiosk/better-kiosk/frame-001.png',
   },
   limited: {
-    epaper: 'epaper-limited.png',
-    kiosk: 'kiosk-normal.png',
+    epaper: 'screens/epaper/stop-sign-with-epaper/frame-002.png',
+    kiosk: 'screens/kiosk/better-kiosk/frame-001.png',
   },
   reroute: {
-    epaper: 'epaper-reroute.png',
-    kiosk: 'kiosk-alert.png',
+    epaper: 'screens/epaper/stop-sign-with-epaper/frame-003.png',
+    kiosk: 'screens/kiosk/better-kiosk/frame-002.png',
   },
 };
