@@ -69,15 +69,25 @@ export interface RationaleText {
   scopeItems: string[];
 }
 
-/** Credits 页面使用的引用和素材占位文案。 */
+/** Credits 页面的一条外部链接。 */
+export interface CreditLinkText {
+  label: string;
+  url: string;
+}
+
+/** Credits 页面的一组引用、素材或实现说明。 */
+export interface CreditSectionText {
+  title: string;
+  body: string;
+  links?: CreditLinkText[];
+}
+
+/** Credits 页面使用的引用和素材文案。 */
 export interface CreditsText {
   eyebrow: string;
   title: string;
   body: string;
-  sections: Array<{
-    title: string;
-    body: string;
-  }>;
+  sections: CreditSectionText[];
 }
 
 /** 首次启动 guide overlay 的单步文案。 */

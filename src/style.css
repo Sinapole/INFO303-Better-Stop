@@ -567,11 +567,15 @@ button {
 
 .credits-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
 .credit-item {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  gap: 12px;
   min-width: 0;
   padding: 14px;
   border: 3px solid #101820;
@@ -584,6 +588,38 @@ button {
   font-size: 0.82rem;
   font-weight: 950;
   text-transform: uppercase;
+}
+
+.credit-links {
+  display: grid;
+  gap: 8px;
+  margin: auto 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.credit-links a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 42px;
+  padding: 9px 11px;
+  border: 2px solid #101820;
+  background: #ffffff;
+  color: #0f766e;
+  font-size: 0.84rem;
+  font-weight: 900;
+  line-height: 1.2;
+  text-decoration: none;
+}
+
+.credit-links a:hover,
+.credit-links a:focus-visible {
+  background: #e5f6f4;
+  color: #0b4f4a;
+  outline: 3px solid #ff9f1c;
+  outline-offset: 2px;
 }
 
 .scope-section {

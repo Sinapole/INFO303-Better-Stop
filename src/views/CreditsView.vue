@@ -9,6 +9,15 @@
         <article v-for="section in creditsText.sections" :key="section.title" class="credit-item">
           <h3>{{ section.title }}</h3>
           <p>{{ section.body }}</p>
+
+          <ul v-if="section.links?.length" class="credit-links" :aria-label="section.title">
+            <li v-for="link in section.links" :key="link.url">
+              <a :href="link.url" target="_blank" rel="noreferrer">
+                <span>{{ link.label }}</span>
+                <span aria-hidden="true">↗</span>
+              </a>
+            </li>
+          </ul>
         </article>
       </div>
     </section>

@@ -52,9 +52,19 @@ const loadFailed = ref(false);
 
 /** GLB 模型路径。如果以后换模型文件，优先改这里。 */
 const modelPath = buildPublicAssetPath('models', 'better-stop.glb');
-/** hover outline 使用交通警示橙色；selected outline 使用导视青色。 */
+/** hover outline 使用交通警示橙色；selected outline 使用更亮的导视青色。 */
 const hoverOutlineColor = new THREE.Color('#ff9f1c');
-const selectedOutlineColor = new THREE.Color('#007f7a');
+const selectedOutlineColor = new THREE.Color('#00b8ad');
+/** hover 框只轻微外扩，避免指向感太重。 */
+const hoverOutlinePaddingRatio = 0.012;
+/** selected 框外扩更多，让用户更容易看出当前固定选择。 */
+const selectedOutlinePaddingRatio = 0.028;
+/** 模型加载前的默认最近缩放距离，模型加载后会按尺寸重新计算。 */
+const defaultMinCameraDistance = 0.6;
+/** 模型加载前的默认最远缩放距离，避免用户在加载瞬间把相机拉得太远。 */
+const defaultMaxCameraDistance = 40;
+/** 允许靠近查看站牌和屏幕内容的缩放比例；数值越小，可以 zoom 得越近。 */
+const closeInspectionDistanceRatio = 0.08;
 
 let scene: THREE.Scene | null = null;
 let camera: THREE.PerspectiveCamera | null = null;
@@ -127,6 +137,18 @@ interface UvBounds {
   minV: number;
   maxU: number;
   maxV: number;
+}
+
+/** hotspot outline 的视觉参数。 */
+interface OutlineStyle {
+  /** 包围盒按自身尺寸外扩的比例。 */
+  paddingRatio: number;
+  /** 最小外扩距离，避免小物件的框太贴边。 */
+  minPadding: number;
+  /** outline 透明度。 */
+  opacity: number;
+  /** 渲染层级；selected 需要压过 hover。 */
+  renderOrder: number;
 }
 
 onMounted(() => {
@@ -204,8 +226,8 @@ function setupScene(): void {
   controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
   controls.dampingFactor = 0.08;
-  controls.minDistance = 1.5;
-  controls.maxDistance = 40;
+  controls.minDistance = defaultMinCameraDistance;
+  controls.maxDistance = defaultMaxCameraDistance;
 
   const hemisphere = new THREE.HemisphereLight('#ffffff', '#8290a0', 1.8);
   const keyLight = new THREE.DirectionalLight('#ffffff', 2.3);
@@ -739,7 +761,7 @@ function frameModel(model: THREE.Object3D): void {
   camera.updateProjectionMatrix();
 
   controls.target.set(0, Math.max(size.y * 0.08, 0), 0);
-  controls.minDistance = Math.max(maxDimension * 0.25, 0.8);
+  controls.minDistance = Math.max(maxDimension * closeInspectionDistanceRatio, 0.25);
   controls.maxDistance = maxDimension * 5;
   controls.update();
 
@@ -883,12 +905,23 @@ function refreshHighlight(): void {
       selectedOutline,
       nextSelectedHotspotId,
       selectedOutlineColor,
+      {
+        minPadding: 0.05,
+        opacity: 1,
+        paddingRatio: selectedOutlinePaddingRatio,
+        renderOrder: 12,
+      },
     );
     selectedOutlineHotspotId = nextSelectedHotspotId;
   }
 
   if (hoverOutlineHotspotId !== nextHoverHotspotId) {
-    hoverOutline = replaceOutlineHelper(hoverOutline, nextHoverHotspotId, hoverOutlineColor);
+    hoverOutline = replaceOutlineHelper(hoverOutline, nextHoverHotspotId, hoverOutlineColor, {
+      minPadding: 0.025,
+      opacity: 0.92,
+      paddingRatio: hoverOutlinePaddingRatio,
+      renderOrder: 10,
+    });
     hoverOutlineHotspotId = nextHoverHotspotId;
   }
 }
@@ -899,12 +932,14 @@ function refreshHighlight(): void {
  * @param current 当前 scene 中的 outline helper。
  * @param hotspotId 需要显示 outline 的 hotspot；null 表示移除。
  * @param color outline 颜色。
+ * @param style outline 的外扩、透明度和渲染层级。
  * @returns 新的 helper，或 null。
  */
 function replaceOutlineHelper(
   current: THREE.Box3Helper | null,
   hotspotId: HotspotId | null,
   color: THREE.Color,
+  style: OutlineStyle,
 ): THREE.Box3Helper | null {
   removeOutlineHelper(current);
 
@@ -912,7 +947,7 @@ function replaceOutlineHelper(
     return null;
   }
 
-  const box = getHotspotBoundingBox(hotspotId);
+  const box = getHotspotBoundingBox(hotspotId, style.paddingRatio, style.minPadding);
 
   if (!box) {
     return null;
@@ -921,13 +956,14 @@ function replaceOutlineHelper(
   const helper = new THREE.Box3Helper(box, color);
   helper.userData.ignoreRaycast = true;
   helper.raycast = () => {};
-  helper.renderOrder = 10;
+  helper.renderOrder = style.renderOrder;
 
   const material = helper.material as THREE.LineBasicMaterial;
   material.depthTest = false;
   material.depthWrite = false;
   material.transparent = true;
-  material.opacity = 0.92;
+  material.opacity = style.opacity;
+  material.linewidth = 2;
 
   scene.add(helper);
   return helper;
@@ -959,9 +995,15 @@ function removeOutlineHelper(helper: THREE.Box3Helper | null): void {
  * 根据 hotspot 的已注册 mesh 计算包围盒，略微外扩后作为 outline frame。
  *
  * @param hotspotId 需要框选的 hotspot ID。
+ * @param paddingRatio 根据包围盒尺寸外扩的比例。
+ * @param minPadding 最小外扩距离。
  * @returns 可绘制的 Box3，或 null。
  */
-function getHotspotBoundingBox(hotspotId: HotspotId): THREE.Box3 | null {
+function getHotspotBoundingBox(
+  hotspotId: HotspotId,
+  paddingRatio: number,
+  minPadding: number,
+): THREE.Box3 | null {
   const meshes = hotspotMeshes.get(hotspotId) ?? [];
 
   if (meshes.length === 0) {
@@ -981,7 +1023,7 @@ function getHotspotBoundingBox(hotspotId: HotspotId): THREE.Box3 | null {
   }
 
   const size = box.getSize(new THREE.Vector3());
-  const padding = Math.max(size.length() * 0.012, 0.025);
+  const padding = Math.max(size.length() * paddingRatio, minPadding);
   box.expandByScalar(padding);
 
   return box;
