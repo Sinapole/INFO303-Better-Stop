@@ -31,28 +31,52 @@
       >
         {{ app.clearSelection }}
       </button>
-    </section>
 
-    <slot />
+      <div v-if="hotspot?.audio" class="audio-guidance">
+        <button
+          type="button"
+          class="text-button text-button--primary audio-guidance__button"
+          :aria-label="hotspot.audio.ariaLabel"
+          @click="$emit('play-audio', hotspot.audio)"
+        >
+          {{ hotspot.audio.buttonLabel }}
+        </button>
+
+        <p class="audio-guidance__transcript">
+          {{ hotspot.audio.transcript }}
+        </p>
+      </div>
+    </section>
 
     <section class="decision-panel">
       <div class="panel-section-heading">
         <p>{{ app.decisionTitle }}</p>
       </div>
 
-      <ol class="decision-list">
-        <li v-for="question in app.decisionQuestions" :key="question">
-          {{ question }}
-        </li>
-      </ol>
+      <dl class="decision-list">
+        <div class="decision-item">
+          <dt>{{ app.decisionFieldLabels.decisionHelped }}</dt>
+          <dd>{{ activeDecision.decisionHelped }}</dd>
+        </div>
+
+        <div class="decision-item">
+          <dt>{{ app.decisionFieldLabels.whatRiderLearns }}</dt>
+          <dd>{{ activeDecision.whatRiderLearns }}</dd>
+        </div>
+
+        <div class="decision-item">
+          <dt>{{ app.decisionFieldLabels.nextAction }}</dt>
+          <dd>{{ activeDecision.nextAction }}</dd>
+        </div>
+      </dl>
     </section>
   </aside>
 </template>
 
 <script setup lang="ts">
-import type { HotspotText } from '../data/hotspots';
-import type { ScenarioId } from '../data/scenarios';
-import type { AppText, ScenarioText } from '../i18n/types';
+import { computed } from 'vue';
+import type { AudioGuidanceText, HotspotText } from '../data/hotspots';
+import type { AppText } from '../i18n/types';
 
 /** InfoPanel 负责文本展示，不直接处理 Three.js 对象或语言切换逻辑。 */
 interface InfoPanelProps {
@@ -64,16 +88,16 @@ interface InfoPanelProps {
   hotspotId: string | null;
   /** 当前展示模式，决定显示 hover short 还是 selected detail。 */
   hotspotMode: 'empty' | 'preview' | 'selected';
-  /** 当前 scenario 文案，保留在 props 中方便之后扩展面板摘要。 */
-  scenario: ScenarioText;
-  /** 当前 scenario ID，保留在 props 中方便之后扩展状态样式。 */
-  scenarioId: ScenarioId;
 }
 
-defineProps<InfoPanelProps>();
+const props = defineProps<InfoPanelProps>();
+
+const activeDecision = computed(() => props.hotspot?.decision ?? props.app.decisionOverview);
 
 defineEmits<{
   /** 用户点击 Clear selection 时通知 App 清除固定 hotspot。 */
   'clear-selection': [];
+  /** 用户请求播放当前 audio guidance transcript。 */
+  'play-audio': [audio: AudioGuidanceText];
 }>();
 </script>

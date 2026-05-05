@@ -11,6 +11,36 @@ export interface HotspotText {
   short: string;
   /** click 后固定展示的详细说明。 */
   detail: string;
+  /** 说明当前组件帮助乘客完成的现场决策。 */
+  decision: RiderDecisionText;
+  /** 可选语音导览文案；用于 audio guidance hotspots。 */
+  audio?: AudioGuidanceText;
+}
+
+/** Rider Decision Panel 展示的单个决策解释。 */
+export interface RiderDecisionText {
+  /** 这个组件主要帮助乘客确认或选择的事情。 */
+  decisionHelped: string;
+  /** 乘客使用该组件后能理解的信息。 */
+  whatRiderLearns: string;
+  /** 乘客接下来可以采取的现场行动。 */
+  nextAction: string;
+}
+
+/** Audio Guidance hotspot 可播放的本地化语音内容。 */
+export interface AudioGuidanceText {
+  /** 播放按钮的可见文字。 */
+  buttonLabel: string;
+  /** 播放按钮的无障碍标签。 */
+  ariaLabel: string;
+  /** 浏览器 SpeechSynthesis 使用的语言代码。 */
+  locale: string;
+  /** 优先使用的系统语音名称；不可用时自动回退到同语言 voice。 */
+  preferredVoiceNames?: string[];
+  /** 朗读内容，也作为 transcript 展示。 */
+  transcript: string;
+  /** 浏览器不支持 speech synthesis 时的 fallback。 */
+  unsupportedMessage: string;
 }
 
 /**

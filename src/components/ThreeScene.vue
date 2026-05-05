@@ -467,9 +467,9 @@ function frameModel(model: THREE.Object3D): void {
   model.position.sub(center);
 
   const distance = maxDimension * 1.45;
-  camera.position.set(distance * 0.8, distance * 0.52, distance);
+  camera.position.set(-distance * 0.8, distance * 0.3, -distance);
   camera.near = Math.max(distance / 100, 0.01);
-  camera.far = distance * 100;
+  camera.far = distance * 90;
   camera.updateProjectionMatrix();
 
   controls.target.set(0, Math.max(size.y * 0.08, 0), 0);

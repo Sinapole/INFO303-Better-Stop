@@ -82,8 +82,9 @@ export function getAppText(locale: Locale): AppText {
   return {
     ...en.app,
     ...localized,
-    decisionQuestions: localized.decisionQuestions ?? en.app.decisionQuestions,
-    routeChips: localized.routeChips ?? en.app.routeChips,
+    decisionFieldLabels: localized.decisionFieldLabels ?? en.app.decisionFieldLabels,
+    decisionOverview: localized.decisionOverview ?? en.app.decisionOverview,
+    guideSteps: localized.guideSteps ?? en.app.guideSteps,
   };
 }
 
@@ -144,11 +145,23 @@ export function getHotspotText(locale: Locale, hotspotId: HotspotId): HotspotTex
   const englishDefault = englishHotspots[DEFAULT_HOTSPOT_KEY];
   const englishHotspot = englishHotspots[hotspotId] ?? englishDefault;
   const localizedHotspot = getLocalizedMessages(locale).hotspots?.[hotspotId] ?? {};
+  const audio = englishHotspot.audio
+    ? {
+        ...englishHotspot.audio,
+        ...localizedHotspot.audio,
+      }
+    : undefined;
 
   return {
     ...englishDefault,
     ...englishHotspot,
     ...localizedHotspot,
+    decision: {
+      ...englishDefault.decision,
+      ...englishHotspot.decision,
+      ...localizedHotspot.decision,
+    },
+    audio,
   };
 }
 
@@ -166,5 +179,6 @@ export function getRationaleText(locale: Locale): RationaleText {
     ...localized,
     bodyParagraphs: localized.bodyParagraphs ?? en.rationale.bodyParagraphs,
     points: localized.points ?? en.rationale.points,
+    scopeItems: localized.scopeItems ?? en.rationale.scopeItems,
   };
 }

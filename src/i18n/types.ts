@@ -1,4 +1,4 @@
-import type { HotspotText } from '../data/hotspots';
+import type { AudioGuidanceText, HotspotText, RiderDecisionText } from '../data/hotspots';
 import type { ScenarioId } from '../data/scenarios';
 
 export type Locale = 'en' | 'zh' | 'es';
@@ -13,18 +13,26 @@ export interface AppText {
   subtitle: string;
   eyebrow: string;
   instruction: string;
+  sectionLabel: string;
+  prototypeNav: string;
+  aboutNav: string;
   hotspotPanelTitle: string;
   noHotspotTitle: string;
   noHotspotDetail: string;
   selectedLabel: string;
   previewLabel: string;
-  scenarioTitle: string;
-  scenarioStatusLabel: string;
   decisionTitle: string;
-  decisionQuestions: string[];
-  routeChips: string[];
+  decisionFieldLabels: RiderDecisionText;
+  decisionOverview: RiderDecisionText;
   languageLabel: string;
   clearSelection: string;
+  guideButton: string;
+  guideNext: string;
+  guideBack: string;
+  guideSkip: string;
+  guideStart: string;
+  guideStepLabel: string;
+  guideSteps: GuideStepText[];
 }
 
 /**
@@ -56,7 +64,19 @@ export interface RationaleText {
   bodyParagraphs?: string[];
   pointsTitle: string;
   points: string[];
+  scopeTitle: string;
+  scopeItems: string[];
 }
+
+/** 首次启动 guide overlay 的单步文案。 */
+export interface GuideStepText {
+  title: string;
+  body: string;
+  points: string[];
+  target: GuideStepTarget;
+}
+
+export type GuideStepTarget = 'forestory' | 'scene' | 'hotspot' | 'decision' | 'language';
 
 /**
  * 一个语言包需要提供的完整文案结构。
@@ -90,6 +110,12 @@ export type PartialMessages = {
   app?: Partial<AppText>;
   viewer?: Partial<ViewerText>;
   scenarios?: Partial<Record<ScenarioId, Partial<ScenarioText>>>;
-  hotspots?: Record<string, Partial<HotspotText>>;
+  hotspots?: Record<
+    string,
+    Partial<Omit<HotspotText, 'decision'>> & {
+      decision?: Partial<RiderDecisionText>;
+      audio?: Partial<AudioGuidanceText>;
+    }
+  >;
   rationale?: Partial<RationaleText>;
 };
