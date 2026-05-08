@@ -25,7 +25,7 @@ import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { isHotspotName, type HotspotId } from '../data/hotspots';
 import { SCENARIO_TEXTURES, type ScenarioId } from '../data/scenarios';
 import { SCREEN_ANIMATIONS, type ScreenAnimationConfig } from '../data/screenAnimations';
-import type { ViewerText } from '../i18n/types';
+import type { ThemeMode, ViewerText } from '../i18n/types';
 
 /** ThreeScene 的输入状态；文本和交互状态由 App 维护，模型只加载一次。 */
 interface ThreeSceneProps {
@@ -35,6 +35,8 @@ interface ThreeSceneProps {
   scenarioId: ScenarioId;
   /** App 中点击固定的 hotspot；ThreeScene 用它保持选中高亮。 */
   selectedHotspotId: HotspotId | null;
+  /** 当前 UI 主题，用来同步 Three.js 场景底色。 */
+  themeMode: ThemeMode;
 }
 
 const props = defineProps<ThreeSceneProps>();
@@ -65,6 +67,11 @@ const defaultMinCameraDistance = 0.6;
 const defaultMaxCameraDistance = 40;
 /** 允许靠近查看站牌和屏幕内容的缩放比例；数值越小，可以 zoom 得越近。 */
 const closeInspectionDistanceRatio = 0.08;
+/** Three.js 场景背景色与 CSS 主题保持一致，避免 canvas 和页面断层。 */
+const sceneBackgroundColors: Record<ThemeMode, string> = {
+  light: '#f4f6f8',
+  dark: '#111820',
+};
 
 let scene: THREE.Scene | null = null;
 let camera: THREE.PerspectiveCamera | null = null;
@@ -185,6 +192,13 @@ watch(
   },
 );
 
+watch(
+  () => props.themeMode,
+  () => {
+    applySceneTheme();
+  },
+);
+
 /**
  * 生成 public 目录资源的部署安全 URL。
  *
@@ -210,7 +224,7 @@ function setupScene(): void {
   }
 
   scene = new THREE.Scene();
-  scene.background = new THREE.Color('#f4f6f8');
+  applySceneTheme();
 
   camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
   camera.position.set(6, 4, 7);
@@ -242,6 +256,15 @@ function setupScene(): void {
   renderer.domElement.addEventListener('click', handleClick);
 
   resizeRenderer();
+}
+
+/** 根据当前 UI theme 更新 Three.js scene background。 */
+function applySceneTheme(): void {
+  if (!scene) {
+    return;
+  }
+
+  scene.background = new THREE.Color(sceneBackgroundColors[props.themeMode]);
 }
 
 /**

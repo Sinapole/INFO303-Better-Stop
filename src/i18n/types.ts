@@ -2,6 +2,8 @@ import type { AudioGuidanceText, HotspotText, RiderDecisionText } from '../data/
 import type { ScenarioId } from '../data/scenarios';
 
 export type Locale = 'en' | 'zh' | 'es';
+export type ThemeMode = 'light' | 'dark';
+export type ThemePreference = 'auto' | ThemeMode;
 
 /**
  * App shell 和信息面板使用的 UI 文案。
@@ -26,6 +28,10 @@ export interface AppText {
   decisionFieldLabels: RiderDecisionText;
   decisionOverview: RiderDecisionText;
   languageLabel: string;
+  themeLabel: string;
+  themeAuto: string;
+  themeLight: string;
+  themeDark: string;
   clearSelection: string;
   guideButton: string;
   guideNext: string;
@@ -63,6 +69,8 @@ export interface RationaleText {
   title: string;
   body: string;
   bodyParagraphs?: string[];
+  contentsLabel: string;
+  scrollCue: string;
   pointsTitle: string;
   points: string[];
   scopeTitle: string;
@@ -87,6 +95,8 @@ export interface CreditsText {
   eyebrow: string;
   title: string;
   body: string;
+  contentsLabel: string;
+  scrollCue: string;
   sections: CreditSectionText[];
 }
 

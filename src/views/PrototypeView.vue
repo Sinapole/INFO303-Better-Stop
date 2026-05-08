@@ -5,6 +5,7 @@
         :labels="viewerText"
         :scenario-id="activeScenario"
         :selected-hotspot-id="selectedHotspotId"
+        :theme-mode="props.themeMode"
         @hotspot-hover="hoveredHotspotId = $event"
         @hotspot-select="selectHotspot"
       />
@@ -27,13 +28,14 @@ import InfoPanel from '../components/InfoPanel.vue';
 import ThreeScene from '../components/ThreeScene.vue';
 import type { AudioGuidanceText, HotspotId } from '../data/hotspots';
 import type { ScenarioId } from '../data/scenarios';
-import { getAppText, getHotspotText, getViewerText, type Locale } from '../i18n';
+import { getAppText, getHotspotText, getViewerText, type Locale, type ThemeMode } from '../i18n';
 
 /** 信息面板当前展示状态：空状态、hover 预览、click 固定选择。 */
 type HotspotMode = 'empty' | 'preview' | 'selected';
 
 interface PrototypeViewProps {
   currentLanguage: Locale;
+  themeMode: ThemeMode;
 }
 
 const props = defineProps<PrototypeViewProps>();

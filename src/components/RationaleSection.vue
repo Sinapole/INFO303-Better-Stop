@@ -8,7 +8,7 @@
       </p>
     </div>
 
-    <div class="rationale-section__points">
+    <div id="about-strategy" class="rationale-section__points document-anchor">
       <div class="panel-section-heading">
         <p>{{ content.pointsTitle }}</p>
       </div>

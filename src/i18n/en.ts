@@ -31,6 +31,10 @@ export const en = {
         'Hover or select a component to see what kind of uncertainty it reduces and what action it makes easier!',
     },
     languageLabel: 'Language',
+    themeLabel: 'Theme',
+    themeAuto: 'Auto',
+    themeLight: 'Light',
+    themeDark: 'Dark',
     clearSelection: 'Clear selection',
     guideButton: 'Guide',
     guideNext: 'Next',
@@ -234,7 +238,7 @@ export const en = {
         locale: 'en-US',
         preferredVoiceNames: ['Samantha', 'Ava', 'Alex', 'Google US English', 'Microsoft Aria'],
         transcript:
-          'This stop is Fourth and Peabody at the northwest corner. It serves Route 22 North Illini and Route 24 South Link. The next bus is Route 22 North Illini, arriving in about 3 minutes. Route 24 South Link arrives in about 5 minutes.',
+          'This stop is Fourth and Peabody at the northwest corner. It serves Route 22 North Illini and Route 24 South Link. The next bus is Route 22 North Illini, arriving in about 3 minutes. Route 24 South Link arrives in about 8 minutes.',
         unsupportedMessage:
           'This browser does not support built-in speech playback. The audio guidance transcript is shown below.',
       },
@@ -292,6 +296,9 @@ export const en = {
       'Because I cannot build or deploy a real MTD stop for this assignment (which is kind of sad), the final artifact takes the form of an interactive 3D model hosted on a website. This format lets you inspect the stop spatially, hover or click on its components, and see how printed maps, e-paper updates, kiosk screens, QR access, audio guidance, and tactile cues work together as a rider-facing information system.',
     ],
 
+    contentsLabel: 'On this page',
+    scrollCue: 'Scroll for project scope and multimodal strategy',
+
     pointsTitle: 'Multimodal Strategy',
 
     points: [
@@ -319,6 +326,8 @@ export const en = {
     eyebrow: 'References and materials',
     title: 'Credits',
     body: 'This section documents the research references, visual materials, and tools that support the Better Stop prototype. The main experience stays focused on the rider-facing artifact, while this page records what the project builds on.',
+    contentsLabel: 'On this page',
+    scrollCue: 'Scroll for references, assets, map sources, and implementation notes',
     sections: [
       {
         title: 'Research and Design References',

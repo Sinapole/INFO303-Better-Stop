@@ -14,7 +14,7 @@ import type {
   ViewerText,
 } from './types';
 
-export type { Locale } from './types';
+export type { Locale, ThemeMode, ThemePreference } from './types';
 
 /**
  * 所有语言包的注册表。
