@@ -224,6 +224,8 @@ export const zh = {
       audio: {
         buttonLabel: '播放语音指引',
         ariaLabel: '播放 Fourth & Peabody 站点的语音指引',
+        stopButtonLabel: '停止语音',
+        stopAriaLabel: '停止播放语音指引',
         locale: 'zh-CN',
         preferredVoiceNames: ['Tingting', 'Meijia', 'Sin-ji', 'Google 普通话'],
         transcript:
@@ -245,6 +247,8 @@ export const zh = {
       audio: {
         buttonLabel: '播放语音指引',
         ariaLabel: '播放 Fourth & Peabody 站点的语音指引',
+        stopButtonLabel: '停止语音',
+        stopAriaLabel: '停止播放语音指引',
         locale: 'zh-CN',
         preferredVoiceNames: ['Tingting', 'Meijia', 'Sin-ji', 'Google 普通话'],
         transcript:

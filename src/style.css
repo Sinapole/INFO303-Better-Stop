@@ -970,83 +970,31 @@ button {
     content: '';
   }
 
-  .guide-overlay--target-forestory .guide-target-ring {
-    display: none;
-  }
-
   .guide-overlay--target-forestory .guide-card {
     top: 180px;
     left: 48px;
   }
 
-  .guide-overlay--target-language .guide-card::before {
-    top: -15px;
-    transform: rotate(45deg);
-  }
-
-  .guide-overlay--target-forestory .guide-card::before {
+  .guide-card--arrow-none::before {
     display: none;
   }
 
-  .guide-overlay--target-scene .guide-target-ring {
-    top: 188px;
-    bottom: 18px;
-    left: 18px;
-    width: calc(100vw - 520px);
-  }
-
-  .guide-overlay--target-scene .guide-card {
-    top: 220px;
-    right: 32px;
-  }
-
-  .guide-overlay--target-scene .guide-card::before,
-  .guide-overlay--target-hotspot .guide-card::before,
-  .guide-overlay--target-decision .guide-card::before {
+  .guide-card--arrow-left::before {
     top: 42px;
     left: -15px;
     transform: rotate(-45deg);
   }
 
-  .guide-overlay--target-hotspot .guide-target-ring {
-    top: 188px;
-    right: 18px;
-    width: 440px;
-    height: 270px;
+  .guide-card--arrow-right::before {
+    top: 42px;
+    right: -15px;
+    transform: rotate(135deg);
   }
 
-  .guide-overlay--target-hotspot .guide-card {
-    top: 204px;
-    left: max(32px, calc(100vw - 1010px));
-  }
-
-  .guide-overlay--target-decision .guide-target-ring {
-    right: 18px;
-    bottom: 18px;
-    width: 440px;
-    height: calc(100vh - 476px);
-    min-height: 220px;
-  }
-
-  .guide-overlay--target-decision .guide-card {
-    right: 506px;
-    bottom: 48px;
-  }
-
-  .guide-overlay--target-language .guide-target-ring {
-    top: 18px;
-    right: 18px;
-    width: 440px;
-    height: 142px;
-  }
-
-  .guide-overlay--target-language .guide-card {
-    top: 188px;
-    right: 48px;
-  }
-
-  .guide-overlay--target-language .guide-card::before {
+  .guide-card--arrow-top::before {
+    top: -15px;
     right: 46px;
+    transform: rotate(45deg);
   }
 }
 

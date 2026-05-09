@@ -235,6 +235,8 @@ export const en = {
       audio: {
         buttonLabel: 'Play audio guidance',
         ariaLabel: 'Play spoken guidance for Fourth and Peabody stop',
+        stopButtonLabel: 'Stop audio',
+        stopAriaLabel: 'Stop spoken guidance',
         locale: 'en-US',
         preferredVoiceNames: ['Samantha', 'Ava', 'Alex', 'Google US English', 'Microsoft Aria'],
         transcript:
@@ -259,6 +261,8 @@ export const en = {
       audio: {
         buttonLabel: 'Play audio guidance',
         ariaLabel: 'Play spoken guidance for Fourth and Peabody stop',
+        stopButtonLabel: 'Stop audio',
+        stopAriaLabel: 'Stop spoken guidance',
         locale: 'en-US',
         preferredVoiceNames: ['Samantha', 'Ava', 'Alex', 'Google US English', 'Microsoft Aria'],
         transcript:

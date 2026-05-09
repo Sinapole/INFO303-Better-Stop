@@ -16,14 +16,16 @@
       :hotspot="visibleHotspotText"
       :hotspot-id="visibleHotspotId"
       :hotspot-mode="hotspotMode"
+      :is-audio-playing="isVisibleAudioPlaying"
       @clear-selection="clearSelection"
       @play-audio="playAudioGuidance"
+      @stop-audio="stopAudioGuidance"
     />
   </main>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import InfoPanel from '../components/InfoPanel.vue';
 import ThreeScene from '../components/ThreeScene.vue';
 import type { AudioGuidanceText, HotspotId } from '../data/hotspots';
@@ -46,6 +48,10 @@ const activeScenario = ref<ScenarioId>('normal');
 const hoveredHotspotId = ref<HotspotId | null>(null);
 /** 点击后固定在信息面板里的 hotspot ID。 */
 const selectedHotspotId = ref<HotspotId | null>(null);
+/** 当前正在朗读的 transcript；用于让按钮在播放时切换成 Stop。 */
+const activeAudioTranscript = ref<string | null>(null);
+let availableSpeechVoices: SpeechSynthesisVoice[] = [];
+let activeUtterance: SpeechSynthesisUtterance | null = null;
 
 /** 当前语言对应的 app shell 文案。 */
 const appText = computed(() => getAppText(props.currentLanguage));
@@ -57,6 +63,12 @@ const visibleHotspotId = computed(() => hoveredHotspotId.value ?? selectedHotspo
 /** 根据当前语言和 visibleHotspotId 解析文案，缺失时由 i18n 层 fallback。 */
 const visibleHotspotText = computed(() =>
   visibleHotspotId.value ? getHotspotText(props.currentLanguage, visibleHotspotId.value) : null,
+);
+/** 当前可见 hotspot 的语音是否正在播放。 */
+const isVisibleAudioPlaying = computed(
+  () =>
+    Boolean(visibleHotspotText.value?.audio) &&
+    visibleHotspotText.value?.audio?.transcript === activeAudioTranscript.value,
 );
 
 /** 给 InfoPanel 的状态标记，用来决定显示 short 还是 detail。 */
@@ -70,6 +82,15 @@ const hotspotMode = computed<HotspotMode>(() => {
   }
 
   return 'empty';
+});
+
+onMounted(() => {
+  warmUpSpeechVoices();
+});
+
+onBeforeUnmount(() => {
+  stopAudioGuidance();
+  window.speechSynthesis?.removeEventListener('voiceschanged', refreshAvailableSpeechVoices);
 });
 
 /**
@@ -112,13 +133,58 @@ function playAudioGuidance(audio: AudioGuidanceText): void {
   utterance.rate = 0.86;
   utterance.pitch = 0.92;
   utterance.volume = 0.95;
+  utterance.onend = () => {
+    clearAudioState(utterance);
+  };
+  utterance.onerror = () => {
+    clearAudioState(utterance);
+  };
 
+  activeUtterance = utterance;
+  activeAudioTranscript.value = audio.transcript;
   window.speechSynthesis.speak(utterance);
+}
+
+/** 立即停止当前浏览器朗读，比 pause/resume 更稳定。 */
+function stopAudioGuidance(): void {
+  if (!window.speechSynthesis) {
+    return;
+  }
+
+  window.speechSynthesis.cancel();
+  activeUtterance = null;
+  activeAudioTranscript.value = null;
+}
+
+/** 只清理当前 utterance，避免旧语音事件覆盖新播放状态。 */
+function clearAudioState(utterance: SpeechSynthesisUtterance): void {
+  if (activeUtterance !== utterance) {
+    return;
+  }
+
+  activeUtterance = null;
+  activeAudioTranscript.value = null;
+}
+
+/** 预先请求系统 voice 列表，减少第一次播放落到浏览器默认音色的概率。 */
+function warmUpSpeechVoices(): void {
+  if (!window.speechSynthesis) {
+    return;
+  }
+
+  refreshAvailableSpeechVoices();
+  window.speechSynthesis.addEventListener('voiceschanged', refreshAvailableSpeechVoices);
+}
+
+/** 刷新浏览器当前暴露的 SpeechSynthesis voice 列表。 */
+function refreshAvailableSpeechVoices(): void {
+  availableSpeechVoices = window.speechSynthesis.getVoices();
 }
 
 /** 从系统 voice 列表里选择更自然的 voice；不可用时回退给浏览器默认 voice。 */
 function findPreferredVoice(audio: AudioGuidanceText): SpeechSynthesisVoice | null {
-  const voices = window.speechSynthesis.getVoices();
+  const voices =
+    availableSpeechVoices.length > 0 ? availableSpeechVoices : window.speechSynthesis.getVoices();
 
   if (voices.length === 0) {
     return null;

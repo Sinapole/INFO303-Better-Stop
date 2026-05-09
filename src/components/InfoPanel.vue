@@ -36,10 +36,10 @@
         <button
           type="button"
           class="text-button text-button--primary audio-guidance__button"
-          :aria-label="hotspot.audio.ariaLabel"
-          @click="$emit('play-audio', hotspot.audio)"
+          :aria-label="isAudioPlaying ? hotspot.audio.stopAriaLabel : hotspot.audio.ariaLabel"
+          @click="isAudioPlaying ? $emit('stop-audio') : $emit('play-audio', hotspot.audio)"
         >
-          {{ hotspot.audio.buttonLabel }}
+          {{ isAudioPlaying ? hotspot.audio.stopButtonLabel : hotspot.audio.buttonLabel }}
         </button>
 
         <p class="audio-guidance__transcript">
@@ -88,6 +88,8 @@ interface InfoPanelProps {
   hotspotId: string | null;
   /** 当前展示模式，决定显示 hover short 还是 selected detail。 */
   hotspotMode: 'empty' | 'preview' | 'selected';
+  /** 当前展示的 audio guidance 是否正在播放。 */
+  isAudioPlaying: boolean;
 }
 
 const props = defineProps<InfoPanelProps>();
@@ -99,5 +101,7 @@ defineEmits<{
   'clear-selection': [];
   /** 用户请求播放当前 audio guidance transcript。 */
   'play-audio': [audio: AudioGuidanceText];
+  /** 用户请求停止当前 audio guidance。 */
+  'stop-audio': [];
 }>();
 </script>

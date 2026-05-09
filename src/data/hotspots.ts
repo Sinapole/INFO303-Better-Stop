@@ -33,6 +33,10 @@ export interface AudioGuidanceText {
   buttonLabel: string;
   /** 播放按钮的无障碍标签。 */
   ariaLabel: string;
+  /** 正在播放时停止按钮的可见文字。 */
+  stopButtonLabel: string;
+  /** 正在播放时停止按钮的无障碍标签。 */
+  stopAriaLabel: string;
   /** 浏览器 SpeechSynthesis 使用的语言代码。 */
   locale: string;
   /** 优先使用的系统语音名称；不可用时自动回退到同语言 voice。 */
