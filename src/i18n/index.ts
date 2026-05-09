@@ -31,7 +31,7 @@ const localizedMessages: Record<Locale, PartialMessages> = {
 /** 当前真正可用的界面语言。Spanish 暂时只作为 disabled 选项展示。 */
 export const AVAILABLE_LOCALES: Locale[] = ['en', 'zh'];
 
-/** 页面顶部语言 chips 使用的显示选项。 */
+/** 页面顶部语言按钮使用的显示选项。 */
 export const LANGUAGE_OPTIONS: LanguageOption[] = [
   { id: 'en', shortLabel: 'EN', label: 'English' },
   { id: 'zh', shortLabel: '中文', label: '中文' },

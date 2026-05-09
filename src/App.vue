@@ -30,11 +30,11 @@
 
           <div class="theme-switcher" :aria-label="appText.themeLabel">
             <span class="theme-switcher__label">{{ appText.themeLabel }}</span>
-            <div class="theme-switcher__chips">
+            <div class="theme-switcher__buttons">
               <button
                 type="button"
-                class="theme-chip"
-                :class="{ 'theme-chip--active': currentThemePreference === 'auto' }"
+                class="theme-button"
+                :class="{ 'theme-button--active': currentThemePreference === 'auto' }"
                 :aria-pressed="currentThemePreference === 'auto'"
                 @click="setThemePreference('auto')"
               >
@@ -42,8 +42,8 @@
               </button>
               <button
                 type="button"
-                class="theme-chip"
-                :class="{ 'theme-chip--active': currentThemePreference === 'light' }"
+                class="theme-button"
+                :class="{ 'theme-button--active': currentThemePreference === 'light' }"
                 :aria-pressed="currentThemePreference === 'light'"
                 @click="setThemePreference('light')"
               >
@@ -51,8 +51,8 @@
               </button>
               <button
                 type="button"
-                class="theme-chip"
-                :class="{ 'theme-chip--active': currentThemePreference === 'dark' }"
+                class="theme-button"
+                :class="{ 'theme-button--active': currentThemePreference === 'dark' }"
                 :aria-pressed="currentThemePreference === 'dark'"
                 @click="setThemePreference('dark')"
               >

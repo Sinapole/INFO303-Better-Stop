@@ -167,8 +167,8 @@ button {
   gap: 14px;
 }
 
-.language-switcher__chips,
-.theme-switcher__chips,
+.language-switcher__buttons,
+.theme-switcher__buttons,
 .scenario-controls__buttons {
   display: flex;
   flex-wrap: wrap;
@@ -233,22 +233,22 @@ button {
   gap: 8px;
 }
 
-.language-chip-wrapper {
+.language-button-wrapper {
   position: relative;
   display: inline-flex;
 }
 
-.language-chip-wrapper--disabled {
+.language-button-wrapper--disabled {
   cursor: not-allowed;
 }
 
-.language-chip-wrapper--disabled:focus {
+.language-button-wrapper--disabled:focus {
   outline: 2px solid var(--color-warning);
   outline-offset: 3px;
 }
 
-.language-chip,
-.theme-chip,
+.language-button,
+.theme-button,
 .scenario-button,
 .text-button,
 .guide-button,
@@ -265,29 +265,38 @@ button {
     transform 150ms ease;
 }
 
-.language-chip,
-.theme-chip {
+.language-button,
+.theme-button {
   min-width: 58px;
   min-height: 38px;
   padding: 7px 11px;
 }
 
-.language-chip:not(:disabled):hover,
-.theme-chip:hover,
+.language-button:not(:disabled):hover,
+.language-button:not(:disabled):focus-visible,
+.theme-button:hover,
+.theme-button:focus-visible,
+.guide-button:hover,
+.guide-button:focus-visible {
+  background: var(--color-ink);
+  color: var(--color-bg);
+  outline: 3px solid var(--color-warning);
+  outline-offset: 2px;
+}
+
 .scenario-button:hover,
 .text-button:hover,
-.guide-button:hover,
 .viewer-toolbar button:hover {
   transform: translateY(-1px);
 }
 
-.language-chip--active,
-.theme-chip--active {
+.language-button--active,
+.theme-button--active {
   background: var(--color-ink);
   color: var(--color-bg);
 }
 
-.language-chip--disabled {
+.language-button--disabled {
   border-color: var(--color-disabled-border);
   background: var(--color-disabled-bg);
   color: var(--color-disabled-text);
@@ -296,7 +305,7 @@ button {
   pointer-events: none;
 }
 
-.language-chip-tooltip {
+.language-button-tooltip {
   position: absolute;
   top: calc(100% + 8px);
   left: 50%;
@@ -319,9 +328,9 @@ button {
     transform 120ms ease;
 }
 
-.language-chip-wrapper--disabled:hover .language-chip-tooltip,
-.language-chip-wrapper--disabled:focus .language-chip-tooltip,
-.language-chip-wrapper--disabled:focus-within .language-chip-tooltip {
+.language-button-wrapper--disabled:hover .language-button-tooltip,
+.language-button-wrapper--disabled:focus .language-button-tooltip,
+.language-button-wrapper--disabled:focus-within .language-button-tooltip {
   opacity: 1;
   transform: translate(-50%, 0);
 }
